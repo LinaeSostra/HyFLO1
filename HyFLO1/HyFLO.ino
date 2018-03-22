@@ -168,5 +168,3 @@ void resetEDPins() {
   digitalWrite(dir, LOW);
   digitalWrite(EN, HIGH);
 }
-
-
