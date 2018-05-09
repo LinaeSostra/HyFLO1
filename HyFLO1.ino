@@ -12,6 +12,10 @@ VL6180x sensor(VL6180X_ADDRESS);
 #define dir 5
 #define EN  6
 
+// Tactile Position Switches
+#define homePin 7
+#define endPin 8
+
 long duration, US_distance;   // US_distance = ultrasonic distance
 
 const int numReadings = 5;     // the number of readings to average
@@ -19,11 +23,11 @@ int readings[numReadings];      // create vector called readings
 int readIndex = 0;              // the index of the current reading
 int total = 0;                  // the running total
 int average = 0;                // the average
-int8_t endPosition;   // end position
-int8_t homePosition;   // home position
+int8_t endPosition;
+int8_t homePosition;
 int x = 0;   // for cup placement delay
 
-int scanComplete = 0; // 1 = scan complete
+bool isScanComplete = false;
 
 int rim1_Location;
 int rim1_location_done = 0;
@@ -47,8 +51,8 @@ void setup() {
   pinMode(EN, OUTPUT);
   digitalWrite(dir, HIGH); //Pull direction pin HIGH to move "reverse" (back to home)
 
-  pinMode (7, INPUT_PULLUP); //tactile switch Home Position
-  pinMode (8, INPUT_PULLUP); //tactile switch End Position
+  pinMode (homePin, INPUT_PULLUP);
+  pinMode (endPin, INPUT_PULLUP);
 
   // for running average algorithm. 
   for (int thisReading = 0; thisReading < numReadings; thisReading++) {
@@ -56,8 +60,8 @@ void setup() {
   }
 
   //check current state of system
-  homePosition = digitalRead(7); // Home Position
-  endPosition = digitalRead(8); // End Position
+  homePosition = digitalRead(homePin);
+  endPosition = digitalRead(endPin);
 }
 
 // MAIN LOOP /**********************************************************************
@@ -66,7 +70,7 @@ void setup() {
 void loop() {
 
   //check if the system is at Home Position. If not, fix it. 
-  if (homePosition == HIGH && scanComplete == 0) {
+  if (homePosition == HIGH && !isScanComplete) {
     returnHome();
   }
 
@@ -75,23 +79,23 @@ void loop() {
   //Serial.println(US_distance);
   
   // cup is placed, so start prelim. scan. 
-  while (US_distance < 15 && scanComplete == 0) {
+  while (US_distance < 15 && !isScanComplete) {
     if (x == 0){
       delay(2000);
       x = 1;
     }
     StepForward();
     //Check if scan is complete
-    endPosition = digitalRead(8);
+    endPosition = digitalRead(endPin);
     if (endPosition == LOW) {
-      scanComplete = 1;
+      isScanComplete = true;
       //Serial.print("Total Steps: "); Serial.println(stepCounter);
-      homePosition = digitalRead(7);
+      homePosition = digitalRead(homePin);
       resetEDPins();
       break;
     }
   }
-  while (US_distance < 10 && scanComplete == 1 && nozzleCentered == 0){
+  while (US_distance < 10 && isScanComplete && nozzleCentered == 0){
     StepReverse();
     //Serial.print("Goto Step Counter = "); Serial.println(stepCounter);
     if (stepCounter == (rim1_Location+rim2_Location)/2){
@@ -186,7 +190,7 @@ void returnHome() {
     digitalWrite(dir, HIGH); // Reverse direction
     digitalWrite(EN, LOW); //Pull enable pin low to allow motor control
     StepReverse();
-    homePosition = digitalRead(7);
+    homePosition = digitalRead(homePin);
     if (homePosition == LOW) {
       digitalWrite(dir, LOW); //Pull direction pin low to move "forward"
       digitalWrite(EN, LOW); //Pull enable pin low to allow motor control
