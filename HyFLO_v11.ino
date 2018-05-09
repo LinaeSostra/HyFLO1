@@ -19,8 +19,8 @@ int readings[numReadings];      // create vector called readings
 int readIndex = 0;              // the index of the current reading
 int total = 0;                  // the running total
 int average = 0;                // the average
-int8_t position2;   // end position
-int8_t position1;   // home position
+int8_t endPosition;   // end position
+int8_t homePosition;   // home position
 int x = 0;   // for cup placement delay
 
 int scanComplete = 0; // 1 = scan complete
@@ -56,8 +56,8 @@ void setup() {
   }
 
   //check current state of system
-  position1 = digitalRead(7); // Home Position
-  position2 = digitalRead(8); // End Position
+  homePosition = digitalRead(7); // Home Position
+  endPosition = digitalRead(8); // End Position
 }
 
 // MAIN LOOP /**********************************************************************
@@ -66,7 +66,7 @@ void setup() {
 void loop() {
 
   //check if the system is at Home Position. If not, fix it. 
-  if (position1 == HIGH && scanComplete == 0) {
+  if (homePosition == HIGH && scanComplete == 0) {
     returnHome();
   }
 
@@ -82,11 +82,11 @@ void loop() {
     }
     StepForward();
     //Check if scan is complete
-    position2 = digitalRead(8);
-    if (position2 == LOW) {
+    endPosition = digitalRead(8);
+    if (endPosition == LOW) {
       scanComplete = 1;
       //Serial.print("Total Steps: "); Serial.println(stepCounter);
-      position1 = digitalRead(7);
+      homePosition = digitalRead(7);
       resetEDPins();
       break;
     }
@@ -109,10 +109,10 @@ void StepForward() {
   //Serial.println("Moving forward at default step mode.");
  
   for (int i = 0; i < 100; i++) {
-    digitalWrite(stp, HIGH); //Trigger one step forward
-    delayMicroseconds(70); //2000 was best
-    digitalWrite(stp, LOW); //Pull step pin low so it can be triggered again
-    delayMicroseconds(70); //2000 was best
+    digitalWrite(stp, HIGH); // Trigger one step forward
+    delayMicroseconds(70); // 2000 was best
+    digitalWrite(stp, LOW); // Pull step pin low so it can be triggered again
+    delayMicroseconds(70); // 2000 was best
   }
 
   uint8_t ToF_distance = sensor.getDistance();
@@ -182,12 +182,12 @@ void StepReverse() {
 
 
 void returnHome() {
-  while (position1 == HIGH) {
+  while (homePosition == HIGH) {
     digitalWrite(dir, HIGH); // Reverse direction
     digitalWrite(EN, LOW); //Pull enable pin low to allow motor control
     StepReverse();
-    position1 = digitalRead(7);
-    if (position1 == LOW) {
+    homePosition = digitalRead(7);
+    if (homePosition == LOW) {
       digitalWrite(dir, LOW); //Pull direction pin low to move "forward"
       digitalWrite(EN, LOW); //Pull enable pin low to allow motor control
       stepCounter = 0; 
