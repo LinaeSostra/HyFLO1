@@ -1,5 +1,15 @@
+/*
+ * Written By: Neutron Her and Rebecca Dun
+ * 
+ * The purpose of this script is to automate the HyFLO 1 to center over an arbitrary cup, and 
+ * dispense the user's prefence of liquid using Fuzzy Logic.
+ */
+ 
+ // Time of Flight Sensor
 #include <SparkFun_VL6180X.h>
 #define VL6180X_ADDRESS 0x29
+
+#define TIME_OF_FLIGHT_MAX_DISTANCE 200
 
 VL6180x sensor(VL6180X_ADDRESS);
 
@@ -14,6 +24,8 @@ long duration, US_distance;   // US_distance = ultrasonic distance
 #define directionPin 5 // Set LOW to step 'forward', Set HIGH to step 'backwards'
 #define enablePin  6 // Controls whether GND is enabled
 
+int stepCounter = 0; 
+
 // Tactile Position Switches
 #define homePin 7
 #define endPin 8
@@ -21,8 +33,10 @@ long duration, US_distance;   // US_distance = ultrasonic distance
 int8_t endPosition;
 int8_t homePosition;
 
+// Other Global Variables
+// Rolling Average Smoothing Variables
 const int numReadings = 5;     // the number of readings to average
-int readings[numReadings];      // create vector called readings 
+int readings[numReadings];
 int readIndex = 0;              // the index of the current reading
 int total = 0;                  // the running total
 int average = 0;                // the average
@@ -31,16 +45,14 @@ int x = 0;   // for cup placement delay
 bool isScanComplete = false;
 
 int rim1_Location;
-int rim1_location_done = 0;
+bool isFirstRimLocated = false;
 int rim1_AfterCounter = 0; 
 int rim2_Location;
 
 int rim1_Height = 0;
 int rim2_Height = 0;
 
-int nozzleCentered = 0; 
-
-int stepCounter = 0; 
+ bool isNozzleCentered = false; 
 
 void setup() {
   Serial.begin(9600); //Start Serial at 115200bps
@@ -96,11 +108,11 @@ void loop() {
       break;
     }
   }
-  while (US_distance < 10 && isScanComplete && nozzleCentered == 0){
+  while (US_distance < 10 && isScanComplete && !isNozzleCentered){
     StepReverse();
     //Serial.print("Goto Step Counter = "); Serial.println(stepCounter);
     if (stepCounter == (rim1_Location+rim2_Location)/2){
-      nozzleCentered = 1;
+      isNozzleCentered = true;
       resetEDPins();
       break;
     }
@@ -131,30 +143,30 @@ void StepForward() {
     readIndex = 0;
   }
 
-  average = 207 - (total / numReadings); 
+  average = TIME_OF_FLIGHT_MAX_DISTANCE - (total / numReadings); 
 
   Serial.print("Distance = "); Serial.println(average);
   stepCounter++;
 
   // Find first maxima
-  if(average > rim1_Height && rim1_location_done == 0 && stepCounter > 30){
+  if(average > rim1_Height && !isFirstRimLocated && stepCounter > 30){
     rim1_Height = average;
     rim1_Location = stepCounter;
     //Serial.print("Rim 1 Location = "); Serial.println(rim1_Location);
   }
   
-  if(average < rim1_Height && rim1_location_done == 0){
+  if(average < rim1_Height && !isFirstRimLocated){
     rim1_AfterCounter++;
     //Serial.print("R1 AfterCounter = "); Serial.println(rim1_AfterCounter);
     if (rim1_AfterCounter == 120){
-      rim1_location_done = 1;
+      isFirstRimLocated = true;
       rim1_AfterCounter = 0;
       //Serial.println("Rim 1 Location"); Serial.println(rim1_Location);
     }
   }
   
   // Find second Maxima
-  if(average > rim2_Height && stepCounter > 10 && stepCounter < 265 && rim1_location_done == 1){
+  if(average > rim2_Height && stepCounter > 10 && stepCounter < 265 && isFirstRimLocated){
     rim2_Height = average;
     rim2_Location = stepCounter;
     //Serial.print("Rim 2 Location"); Serial.println(rim2_Location);
