@@ -2,13 +2,12 @@
  * Written By: Neutron Her and Rebecca Dun
  * 
  * The purpose of this script is to automate the HyFLO 1 to center over an arbitrary cup, and 
- * dispense the user's prefence of liquid using Fuzzy Logic.
+ * dispense the user's preference of liquid using Fuzzy Logic.
  */
- 
- // Time of Flight Sensor
-#include <SparkFun_VL6180X.h>
-#define VL6180X_ADDRESS 0x29
+#include "src/SparkFun_VL6180X.h"
 
+// Time of Flight Sensor
+#define VL6180X_ADDRESS 0x29
 #define TIME_OF_FLIGHT_MAX_DISTANCE 200
 
 VL6180x sensor(VL6180X_ADDRESS);
@@ -17,7 +16,7 @@ VL6180x sensor(VL6180X_ADDRESS);
 #define trigPin 10
 #define echoPin 9
 
-long duration, US_distance;   // US_distance = ultrasonic distance
+long duration, ultrasonicDistance; 
 
 // Stepper Motor Easy Driver 
 #define stepperPin 4 // Rising edge (LOW -> HIGH) triggers a step
@@ -40,7 +39,7 @@ int readings[numReadings];
 int readIndex = 0;              // the index of the current reading
 int total = 0;                  // the running total
 int average = 0;                // the average
-int x = 0;   // for cup placement delay
+//int x = 0;   // for cup placement delay
 
 bool isScanComplete = false;
 
@@ -52,29 +51,36 @@ int rim2_Location;
 int rim1_Height = 0;
 int rim2_Height = 0;
 
- bool isNozzleCentered = false; 
+bool isNozzleCentered = false; 
 
 void setup() {
+  //TODO(Rebecca): Ask Neutron about comment vs code.
   Serial.begin(9600); //Start Serial at 115200bps
-  sensor.VL6180xDefautSettings(); //Load default settings to get started.
+
+  // Initialize Time of Flight Sensor
+  sensor.VL6180xDefautSettings();
   sensor.VL6180xInit();
 
+  // Initialize Stepper Motor / Easy Driver
   pinMode(stepperPin, OUTPUT);
   pinMode(directionPin, OUTPUT);
   pinMode(enablePin, OUTPUT);
-  digitalWrite(directionPin, HIGH); //Pull direction pin HIGH to move "reverse" (back to home)
-
+ 
+  // Initalize Tactile Position Switches
   pinMode (homePin, INPUT_PULLUP);
   pinMode (endPin, INPUT_PULLUP);
 
-  // for running average algorithm. 
+  // Initializing readings array to 0s. (for running average algorithm) 
   for (int thisReading = 0; thisReading < numReadings; thisReading++) {
     readings[thisReading] = 0;
   }
 
-  //check current state of system
+  // Check current state of system
   homePosition = digitalRead(homePin);
   endPosition = digitalRead(endPin);
+
+  //TODO(Rebecca): Remove this later.
+  digitalWrite(directionPin, HIGH); //Pull direction pin HIGH to move "reverse" (back to home)
 }
 
 // MAIN LOOP /**********************************************************************
@@ -89,14 +95,15 @@ void loop() {
 
   // check if there's a cup
   checkProximity();
-  //Serial.println(US_distance);
+  //Serial.println(ultrasonicDistance);
   
   // cup is placed, so start prelim. scan. 
-  while (US_distance < 15 && !isScanComplete) {
-    if (x == 0){
+  while (ultrasonicDistance < 15 && !isScanComplete) {
+    //TODO(Rebecca): Testing without x
+    /*if (x == 0){
       delay(2000);
       x = 1;
-    }
+    }*/
     StepForward();
     //Check if scan is complete
     endPosition = digitalRead(endPin);
@@ -104,16 +111,16 @@ void loop() {
       isScanComplete = true;
       //Serial.print("Total Steps: "); Serial.println(stepCounter);
       homePosition = digitalRead(homePin);
-      resetEDPins();
+      resetEasyDriver();
       break;
     }
   }
-  while (US_distance < 10 && isScanComplete && !isNozzleCentered){
+  while (ultrasonicDistance < 10 && isScanComplete && !isNozzleCentered){
     StepReverse();
     //Serial.print("Goto Step Counter = "); Serial.println(stepCounter);
     if (stepCounter == (rim1_Location+rim2_Location)/2){
       isNozzleCentered = true;
-      resetEDPins();
+      resetEasyDriver();
       break;
     }
   }
@@ -121,7 +128,7 @@ void loop() {
 
 //FUNCTIONS /***********************************************************************
 ////////////////////////////////////////////////////////////////////////////////////
-
+//TODO(Rebecca): Refactor StepForward & StepBackward to be more modular.
 void StepForward() {
   //Serial.println("Moving forward at default step mode.");
  
@@ -175,13 +182,6 @@ void StepForward() {
   
 }
  
-
-
-
-
-
-
-
 //Reverse default microstep mode function
 void StepReverse() {
   //Serial.println("Moving reverse at default step mode.");
@@ -221,9 +221,9 @@ void checkProximity() {
   delayMicroseconds(10); // Added this line
   digitalWrite(trigPin, LOW);
   duration = pulseIn(echoPin, HIGH);
-  US_distance = (duration / 2) / 29.1;
+  ultrasonicDistance = (duration / 2) / 29.1;
 
-  if (US_distance < 15) {
+  if (ultrasonicDistance < 15) {
     delay(100);
     digitalWrite(trigPin, LOW);  // Added this line
     delayMicroseconds(2); // Added this line
@@ -231,12 +231,16 @@ void checkProximity() {
     delayMicroseconds(10); // Added this line
     digitalWrite(trigPin, LOW);
     duration = pulseIn(echoPin, HIGH);
-    US_distance = (duration / 2) / 29.1;
+    ultrasonicDistance = (duration / 2) / 29.1;
   }
 }
 
-//Reset Easy Driver pins to default states
-void resetEDPins() {
+/* Reset Easy Driver pins to default state by:
+  - resetting the stepper (LOW)
+  - the direction to move "forward" (LOW)
+  - Enabling GND (HIGH)
+*/
+void resetEasyDriver() {
   digitalWrite(stepperPin, LOW);
   digitalWrite(directionPin, LOW);
   digitalWrite(enablePin, HIGH);
