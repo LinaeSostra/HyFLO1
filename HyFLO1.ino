@@ -3,28 +3,29 @@
 
 VL6180x sensor(VL6180X_ADDRESS);
 
-// for Ultrasonic
+// Ultrasonic Sensor
 #define trigPin 10
 #define echoPin 9
 
-// for Stepper Motor Easy Driver 
-#define stp 4
-#define dir 5
-#define EN  6
+long duration, US_distance;   // US_distance = ultrasonic distance
+
+// Stepper Motor Easy Driver 
+#define stepperPin 4 // Rising edge (LOW -> HIGH) triggers a step
+#define directionPin 5 // Set LOW to step 'forward', Set HIGH to step 'backwards'
+#define enablePin  6 // Controls whether GND is enabled
 
 // Tactile Position Switches
 #define homePin 7
 #define endPin 8
 
-long duration, US_distance;   // US_distance = ultrasonic distance
+int8_t endPosition;
+int8_t homePosition;
 
 const int numReadings = 5;     // the number of readings to average
 int readings[numReadings];      // create vector called readings 
 int readIndex = 0;              // the index of the current reading
 int total = 0;                  // the running total
 int average = 0;                // the average
-int8_t endPosition;
-int8_t homePosition;
 int x = 0;   // for cup placement delay
 
 bool isScanComplete = false;
@@ -46,10 +47,10 @@ void setup() {
   sensor.VL6180xDefautSettings(); //Load default settings to get started.
   sensor.VL6180xInit();
 
-  pinMode(stp, OUTPUT);
-  pinMode(dir, OUTPUT);
-  pinMode(EN, OUTPUT);
-  digitalWrite(dir, HIGH); //Pull direction pin HIGH to move "reverse" (back to home)
+  pinMode(stepperPin, OUTPUT);
+  pinMode(directionPin, OUTPUT);
+  pinMode(enablePin, OUTPUT);
+  digitalWrite(directionPin, HIGH); //Pull direction pin HIGH to move "reverse" (back to home)
 
   pinMode (homePin, INPUT_PULLUP);
   pinMode (endPin, INPUT_PULLUP);
@@ -113,9 +114,9 @@ void StepForward() {
   //Serial.println("Moving forward at default step mode.");
  
   for (int i = 0; i < 100; i++) {
-    digitalWrite(stp, HIGH); // Trigger one step forward
+    digitalWrite(stepperPin, HIGH); // Trigger one step forward
     delayMicroseconds(70); // 2000 was best
-    digitalWrite(stp, LOW); // Pull step pin low so it can be triggered again
+    digitalWrite(stepperPin, LOW); // Pull step pin low so it can be triggered again
     delayMicroseconds(70); // 2000 was best
   }
 
@@ -172,12 +173,12 @@ void StepForward() {
 //Reverse default microstep mode function
 void StepReverse() {
   //Serial.println("Moving reverse at default step mode.");
-  digitalWrite(EN, LOW); //Pull enable pin low to allow motor control
-  digitalWrite(dir, HIGH); //Pull direction pin low to move "forward"
+  digitalWrite(enablePin, LOW); //Pull enable pin low to allow motor control
+  digitalWrite(directionPin, HIGH); //Pull direction pin low to move "forward"
   for (int i = 0; i < 100; i++) {
-    digitalWrite(stp, HIGH); //Trigger one step forward
+    digitalWrite(stepperPin, HIGH); //Trigger one step forward
     delayMicroseconds(70); //2000 was best
-    digitalWrite(stp, LOW); //Pull step pin low so it can be triggered again
+    digitalWrite(stepperPin, LOW); //Pull step pin low so it can be triggered again
     delayMicroseconds(70); //2000 was best
   }
   stepCounter--;
@@ -187,13 +188,13 @@ void StepReverse() {
 
 void returnHome() {
   while (homePosition == HIGH) {
-    digitalWrite(dir, HIGH); // Reverse direction
-    digitalWrite(EN, LOW); //Pull enable pin low to allow motor control
+    digitalWrite(directionPin, HIGH); // Reverse direction
+    digitalWrite(enablePin, LOW); //Pull enable pin low to allow motor control
     StepReverse();
     homePosition = digitalRead(homePin);
     if (homePosition == LOW) {
-      digitalWrite(dir, LOW); //Pull direction pin low to move "forward"
-      digitalWrite(EN, LOW); //Pull enable pin low to allow motor control
+      digitalWrite(directionPin, LOW); //Pull direction pin low to move "forward"
+      digitalWrite(enablePin, LOW); //Pull enable pin low to allow motor control
       stepCounter = 0; 
       break;
     }
@@ -224,7 +225,7 @@ void checkProximity() {
 
 //Reset Easy Driver pins to default states
 void resetEDPins() {
-  digitalWrite(stp, LOW);
-  digitalWrite(dir, LOW);
-  digitalWrite(EN, HIGH);
+  digitalWrite(stepperPin, LOW);
+  digitalWrite(directionPin, LOW);
+  digitalWrite(enablePin, HIGH);
 }
