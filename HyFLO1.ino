@@ -8,15 +8,27 @@
 
 // Time of Flight Sensor
 #define VL6180X_ADDRESS 0x29
-#define TIME_OF_FLIGHT_MAX_DISTANCE 200
+#define TIME_OF_FLIGHT_MAX_DISTANCE 200 // mm
 
 VL6180x sensor(VL6180X_ADDRESS);
 
 // Ultrasonic Sensor
-#define trigPin 10
+/*
+ * The ultrasonic sensor requires 2 pins (http://wiki.jmoon.co/hcsr04/):
+ * Trigger Pin is used to send out an ultrasonic high level pulse for at least 10 microseconds
+ * Echo Pin automatically detects the returning pulse, measured in microseconds
+ */
+#define triggerPin 10
 #define echoPin 9
 
-long duration, ultrasonicDistance; 
+#define SPEED_OF_SOUND 0.343 // mm per microsecond
+#define DETECTION_THRESHOLD 1500 // mm
+
+#define TRIGGER_SWITCH_WAITTIME 2 // microseconds
+#define TRIGGER_PULSE_WAITTIME 10 // microseconds
+
+
+long ultrasonicDistance; 
 
 // Stepper Motor Easy Driver 
 #define stepperPin 4 // Rising edge (LOW -> HIGH) triggers a step
@@ -53,12 +65,15 @@ int rim2_Height = 0;
 bool isNozzleCentered = false; 
 
 void setup() {
-  //TODO(Rebecca): Ask Neutron about comment vs code.
-  Serial.begin(115200); //Start Serial at 115200bps
+  Serial.begin(9600);
 
   // Initialize Time of Flight Sensor
   sensor.VL6180xDefautSettings();
   sensor.VL6180xInit();
+
+  // Initialize Ultrasonic Sensor
+  pinMode(triggerPin, OUTPUT);
+  pinMode(echoPin, INPUT);
 
   // Initialize Stepper Motor / Easy Driver
   pinMode(stepperPin, OUTPUT);
@@ -66,8 +81,8 @@ void setup() {
   pinMode(enablePin, OUTPUT);
  
   // Initalize Tactile Position Switches
-  pinMode (homePin, INPUT_PULLUP);
-  pinMode (endPin, INPUT_PULLUP);
+  pinMode(homePin, INPUT_PULLUP);
+  pinMode(endPin, INPUT_PULLUP);
 
   // Initializing readings array to 0s. (for running average algorithm) 
   for (int thisReading = 0; thisReading < numReadings; thisReading++) {
@@ -204,24 +219,33 @@ void returnHome() {
   }
 }
 
-void checkProximity() {
-  digitalWrite(trigPin, LOW);  // Added this line
-  delayMicroseconds(2); // Added this line
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10); // Added this line
-  digitalWrite(trigPin, LOW);
-  duration = pulseIn(echoPin, HIGH);
-  ultrasonicDistance = (duration / 2) / 29.1;
+ // Returns the Ultrasonic Distance Reading
+long getUltrasonicReading() {
+  digitalWrite(triggerPin, LOW); 
+  delayMicroseconds(TRIGGER_SWITCH_WAITTIME); // Waiting to update to LOW
+  digitalWrite(triggerPin, HIGH);
+  delayMicroseconds(TRIGGER_PULSE_WAITTIME);
+  digitalWrite(triggerPin, LOW);
 
-  if (ultrasonicDistance < 15) {
+  // Converting Ultrasonic Reading to Distance
+  // Note: To convert the ultrasonic measurement from microseconds to distance,
+  // the returnTime needs to be halved as returnTime presents both the time to hit
+  // the object and return back to the sensor. Then this time needs to multipled by 
+  // the speed of sound.
+  //
+  // distance = ((Time for wave to return / 2) * Speed of Sound)
+  long returnTime = pulseIn(echoPin, HIGH);
+  long distance = returnTime / 2 * SPEED_OF_SOUND;
+  return distance;
+}
+
+
+void checkProximity() {
+  ultrasonicDistance = getUltrasonicReading();
+  //TODO(Rebecca): Make this an interrupt.
+  if (ultrasonicDistance < DETECTION_THRESHOLD) {
     delay(100);
-    digitalWrite(trigPin, LOW);  // Added this line
-    delayMicroseconds(2); // Added this line
-    digitalWrite(trigPin, HIGH);
-    delayMicroseconds(10); // Added this line
-    digitalWrite(trigPin, LOW);
-    duration = pulseIn(echoPin, HIGH);
-    ultrasonicDistance = (duration / 2) / 29.1;
+    ultrasonicDistance = getUltrasonicReading();
   }
 }
 
