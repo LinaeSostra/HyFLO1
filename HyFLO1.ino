@@ -39,7 +39,6 @@ int readings[numReadings];
 int readIndex = 0;              // the index of the current reading
 int total = 0;                  // the running total
 int average = 0;                // the average
-//int x = 0;   // for cup placement delay
 
 bool isScanComplete = false;
 
@@ -55,7 +54,7 @@ bool isNozzleCentered = false;
 
 void setup() {
   //TODO(Rebecca): Ask Neutron about comment vs code.
-  Serial.begin(9600); //Start Serial at 115200bps
+  Serial.begin(115200); //Start Serial at 115200bps
 
   // Initialize Time of Flight Sensor
   sensor.VL6180xDefautSettings();
@@ -99,15 +98,10 @@ void loop() {
   
   // cup is placed, so start prelim. scan. 
   while (ultrasonicDistance < 15 && !isScanComplete) {
-    //TODO(Rebecca): Testing without x
-    /*if (x == 0){
-      delay(2000);
-      x = 1;
-    }*/
     StepForward();
     //Check if scan is complete
     endPosition = digitalRead(endPin);
-    if (endPosition == LOW) {
+    if(endPosition == LOW) {
       isScanComplete = true;
       //Serial.print("Total Steps: "); Serial.println(stepCounter);
       homePosition = digitalRead(homePin);
@@ -131,7 +125,8 @@ void loop() {
 //TODO(Rebecca): Refactor StepForward & StepBackward to be more modular.
 void StepForward() {
   //Serial.println("Moving forward at default step mode.");
- 
+
+  //TODO(Rebecca): This oversteps the first rim by too much. Refactor for real time-ness
   for (int i = 0; i < 100; i++) {
     digitalWrite(stepperPin, HIGH); // Trigger one step forward
     delayMicroseconds(70); // 2000 was best
@@ -177,9 +172,7 @@ void StepForward() {
     rim2_Height = average;
     rim2_Location = stepCounter;
     //Serial.print("Rim 2 Location"); Serial.println(rim2_Location);
-  }
-
-  
+  } 
 }
  
 //Reverse default microstep mode function
@@ -196,8 +189,6 @@ void StepReverse() {
   stepCounter--;
 }
 
-
-
 void returnHome() {
   while (homePosition == HIGH) {
     digitalWrite(directionPin, HIGH); // Reverse direction
@@ -212,7 +203,6 @@ void returnHome() {
     }
   }
 }
-
 
 void checkProximity() {
   digitalWrite(trigPin, LOW);  // Added this line
