@@ -23,14 +23,12 @@ VL6180x sensor(VL6180X_ADDRESS);
 
 #define SPEED_OF_SOUND 0.343 // mm per microsecond
 #define DETECTION_THRESHOLD 100 // mm
+#define ERROR_PERCENTAGE 0.05 // % (unitless)
 
 #define TRIGGER_SWITCH_WAITTIME 2 // microseconds
 #define TRIGGER_PULSE_WAITTIME 10 // microseconds
 
-
-long ultrasonicDistance; 
-
-// Stepper Motor Easy Driver 
+// Stepper Motor Easy Driver
 #define stepperPin 4 // Rising edge (LOW -> HIGH) triggers a step
 #define directionPin 5 // Set LOW to step 'forward', Set HIGH to step 'backwards'
 #define enablePin  6 // Controls whether GND is enabled
@@ -52,6 +50,7 @@ int readIndex = 0;              // the index of the current reading
 int total = 0;                  // the running total
 int average = 0;                // the average
 
+bool isContainerThere = false;
 bool isScanComplete = false;
 
 int rim1_Location;
@@ -109,10 +108,9 @@ void loop() {
 
   // check if there's a cup
   checkProximity();
-  Serial.println(ultrasonicDistance);
   
   // cup is placed, so start prelim. scan. 
-  while (ultrasonicDistance < DETECTION_THRESHOLD && !isScanComplete) {
+  while (isContainerThere && !isScanComplete) {
     StepForward();
     //Check if scan is complete
     endPosition = digitalRead(endPin);
@@ -124,7 +122,7 @@ void loop() {
       break;
     }
   }
-  while (ultrasonicDistance < DETECTION_THRESHOLD && isScanComplete && !isNozzleCentered){
+  while (isContainerThere && isScanComplete && !isNozzleCentered){
     StepReverse();
     //Serial.print("Goto Step Counter = "); Serial.println(stepCounter);
     if (stepCounter == (rim1_Location+rim2_Location)/2){
@@ -241,11 +239,16 @@ long getUltrasonicReading() {
 
 
 void checkProximity() {
-  ultrasonicDistance = getUltrasonicReading();
+  long ultrasonicDistance = getUltrasonicReading();
   //TODO(Rebecca): Make this an interrupt.
   if (ultrasonicDistance < DETECTION_THRESHOLD) {
     delay(100);
-    ultrasonicDistance = getUltrasonicReading();
+    Serial.println(ultrasonicDistance);
+    long ultrasonicDistance2 = getUltrasonicReading();
+    int error = abs(ultrasonicDistance - ultrasonicDistance2) / ultrasonicDistance;
+    if( error < ERROR_PERCENTAGE ) {
+      isContainerThere = true;
+    }
   }
 }
 
