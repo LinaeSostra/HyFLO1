@@ -22,7 +22,7 @@ VL6180x sensor(VL6180X_ADDRESS);
 #define echoPin 9
 
 #define SPEED_OF_SOUND 0.343 // mm per microsecond
-#define DETECTION_THRESHOLD 1500 // mm
+#define DETECTION_THRESHOLD 100 // mm
 
 #define TRIGGER_SWITCH_WAITTIME 2 // microseconds
 #define TRIGGER_PULSE_WAITTIME 10 // microseconds
@@ -109,10 +109,10 @@ void loop() {
 
   // check if there's a cup
   checkProximity();
-  //Serial.println(ultrasonicDistance);
+  Serial.println(ultrasonicDistance);
   
   // cup is placed, so start prelim. scan. 
-  while (ultrasonicDistance < 15 && !isScanComplete) {
+  while (ultrasonicDistance < DETECTION_THRESHOLD && !isScanComplete) {
     StepForward();
     //Check if scan is complete
     endPosition = digitalRead(endPin);
@@ -124,7 +124,7 @@ void loop() {
       break;
     }
   }
-  while (ultrasonicDistance < 10 && isScanComplete && !isNozzleCentered){
+  while (ultrasonicDistance < DETECTION_THRESHOLD && isScanComplete && !isNozzleCentered){
     StepReverse();
     //Serial.print("Goto Step Counter = "); Serial.println(stepCounter);
     if (stepCounter == (rim1_Location+rim2_Location)/2){
