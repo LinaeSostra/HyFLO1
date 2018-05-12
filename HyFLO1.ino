@@ -43,6 +43,8 @@ int stepCounter = 0;
 int8_t endPosition;
 int8_t homePosition;
 
+bool hasReturnedHome = false;
+
 // Other Global Variables
 // Rolling Average Smoothing Variables
 const int numReadings = 5;     // the number of readings to average
@@ -78,6 +80,7 @@ void setup() {
   pinMode(stepperPin, OUTPUT);
   pinMode(directionPin, OUTPUT);
   pinMode(enablePin, OUTPUT);
+  resetDriver();
  
   // Initalize Tactile Position Switches
   pinMode(homePin, INPUT_PULLUP);
@@ -88,12 +91,9 @@ void setup() {
     readings[thisReading] = 0;
   }
 
-  // Check current state of system
+  // Check current state of the system
   homePosition = digitalRead(homePin);
   endPosition = digitalRead(endPin);
-
-  //TODO(Rebecca): Remove this later.
-  digitalWrite(directionPin, HIGH); //Pull direction pin HIGH to move "reverse" (back to home)
 }
 
 // MAIN LOOP /**********************************************************************
@@ -118,7 +118,7 @@ void loop() {
       isScanComplete = true;
       //Serial.print("Total Steps: "); Serial.println(stepCounter);
       homePosition = digitalRead(homePin);
-      resetEasyDriver();
+      resetDriver();
       break;
     }
   }
@@ -127,7 +127,7 @@ void loop() {
     //Serial.print("Goto Step Counter = "); Serial.println(stepCounter);
     if (stepCounter == (rim1_Location+rim2_Location)/2){
       isNozzleCentered = true;
-      resetEasyDriver();
+      resetDriver();
       break;
     }
   }
@@ -135,6 +135,18 @@ void loop() {
 
 //FUNCTIONS /***********************************************************************
 ////////////////////////////////////////////////////////////////////////////////////
+
+/* Reset Easy Driver pins to default state by:
+  - resetting the stepper (LOW)
+  - the direction to move "forward" (LOW)
+  - Enabling GND (HIGH)
+*/
+void resetDriver() {
+  digitalWrite(stepperPin, LOW);
+  digitalWrite(directionPin, LOW);
+  digitalWrite(enablePin, HIGH);
+}
+
 //TODO(Rebecca): Refactor StepForward & StepBackward to be more modular.
 void StepForward() {
   //Serial.println("Moving forward at default step mode.");
@@ -202,17 +214,21 @@ void StepReverse() {
   stepCounter--;
 }
 
+// Returns the Nozzle to the Home Position
 void returnHome() {
-  while (homePosition == HIGH) {
+  while(!hasReturnedHome) {
+    //TODO(Rebecca): Add this into StepReverse()
     digitalWrite(directionPin, HIGH); // Reverse direction
     digitalWrite(enablePin, LOW); //Pull enable pin low to allow motor control
     StepReverse();
     homePosition = digitalRead(homePin);
     if (homePosition == LOW) {
+      //TODO(Rebecca): Add this into StepForward()
       digitalWrite(directionPin, LOW); //Pull direction pin low to move "forward"
       digitalWrite(enablePin, LOW); //Pull enable pin low to allow motor control
+      hasReturnedHome = true;
       stepCounter = 0; 
-      break;
+      //break;
     }
   }
 }
@@ -237,7 +253,7 @@ int getUltrasonicReading() {
   return distance;
 }
 
-// Checks whether an object has been placed in the vicinity
+// Checks whether an object has been placed in the vicinity or not
 bool checkProximity() {
   bool isContainerThere = false;
   int ultrasonicDistance = getUltrasonicReading();
@@ -257,15 +273,4 @@ bool checkProximity() {
     }
   }
   return isContainerThere;
-}
-
-/* Reset Easy Driver pins to default state by:
-  - resetting the stepper (LOW)
-  - the direction to move "forward" (LOW)
-  - Enabling GND (HIGH)
-*/
-void resetEasyDriver() {
-  digitalWrite(stepperPin, LOW);
-  digitalWrite(directionPin, LOW);
-  digitalWrite(enablePin, HIGH);
 }
