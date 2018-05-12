@@ -23,10 +23,11 @@ VL6180x sensor(VL6180X_ADDRESS);
 
 #define SPEED_OF_SOUND 0.343 // mm per microsecond
 #define DETECTION_THRESHOLD 100 // mm
-#define ERROR_PERCENTAGE 0.05 // % (unitless)
+#define MAX_ERROR_PERCENTAGE 0.05 // % (unitless)
 
 #define TRIGGER_SWITCH_WAITTIME 2 // microseconds
 #define TRIGGER_PULSE_WAITTIME 10 // microseconds
+#define CONTAINER_DEBOUNCE_WAITTIME 1000 // milliseconds
 
 // Stepper Motor Easy Driver
 #define stepperPin 4 // Rising edge (LOW -> HIGH) triggers a step
@@ -50,7 +51,6 @@ int readIndex = 0;              // the index of the current reading
 int total = 0;                  // the running total
 int average = 0;                // the average
 
-bool isContainerThere = false;
 bool isScanComplete = false;
 
 int rim1_Location;
@@ -101,13 +101,13 @@ void setup() {
 
 void loop() {
 
-  //check if the system is at Home Position. If not, fix it. 
+  // check if the system is at Home Position. If not, fix it. 
   if (homePosition == HIGH && !isScanComplete) {
     returnHome();
   }
 
-  // check if there's a cup
-  checkProximity();
+  // Check if there's a container present
+  bool isContainerThere = checkProximity();
   
   // cup is placed, so start prelim. scan. 
   while (isContainerThere && !isScanComplete) {
@@ -217,8 +217,8 @@ void returnHome() {
   }
 }
 
- // Returns the Ultrasonic Distance Reading
-long getUltrasonicReading() {
+// Returns the Ultrasonic Distance Reading
+int getUltrasonicReading() {
   digitalWrite(triggerPin, LOW); 
   delayMicroseconds(TRIGGER_SWITCH_WAITTIME); // Waiting to update to LOW
   digitalWrite(triggerPin, HIGH);
@@ -237,20 +237,26 @@ long getUltrasonicReading() {
   return distance;
 }
 
-
-void checkProximity() {
-  long ultrasonicDistance = getUltrasonicReading();
-  //TODO(Rebecca): Make this an interrupt.
-  if (ultrasonicDistance < DETECTION_THRESHOLD) {
-    delay(100);
-    Serial.println(ultrasonicDistance);
-    long ultrasonicDistance2 = getUltrasonicReading();
-    //TODO(Rebecca): This error is overkill 
-    int error = abs(ultrasonicDistance - ultrasonicDistance2) / ultrasonicDistance;
-    if( error < ERROR_PERCENTAGE ) {
+// Checks whether an object has been placed in the vicinity
+bool checkProximity() {
+  bool isContainerThere = false;
+  int ultrasonicDistance = getUltrasonicReading();
+  
+  bool isObjectPresent = ultrasonicDistance < DETECTION_THRESHOLD;
+  if (isObjectPresent) {
+    // Debounce Distance Checking
+    delay(CONTAINER_DEBOUNCE_WAITTIME);
+    int ultrasonicDistance2 = getUltrasonicReading();
+    bool isDistancePositive = ultrasonicDistance > 0;
+    int errorPercentage  = isDistancePositive ? 0 : (abs(ultrasonicDistance - ultrasonicDistance2) / ultrasonicDistance); 
+    
+    // Checking if distance has stabilized
+    bool hasDistanceStabilized = errorPercentage < MAX_ERROR_PERCENTAGE;
+    if (hasDistanceStabilized) {
       isContainerThere = true;
     }
   }
+  return isContainerThere;
 }
 
 /* Reset Easy Driver pins to default state by:
