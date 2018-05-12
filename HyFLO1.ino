@@ -101,10 +101,8 @@ void setup() {
 
 void loop() {
 
-  // check if the system is at Home Position. If not, fix it. 
-  if (homePosition == HIGH && !isScanComplete) {
-    returnHome();
-  }
+  // Send the nozzle to home position 
+  returnHome();
 
   // Check if there's a container present
   bool isContainerThere = checkProximity();
@@ -161,6 +159,7 @@ void setDriverReverse() {
 
 //TODO(Rebecca): Refactor StepForward & StepBackward to be more modular.
 void StepForward() {
+  setDriverForward();
   //Serial.println("Moving forward at default step mode.");
 
   //TODO(Rebecca): This oversteps the first rim by too much. Refactor for real time-ness
@@ -214,6 +213,7 @@ void StepForward() {
  
 //Reverse default microstep mode function
 void StepReverse() {
+  setDriverReverse();
   //Serial.println("Moving reverse at default step mode.");
   digitalWrite(enablePin, LOW); //Pull enable pin low to allow motor control
   digitalWrite(directionPin, HIGH); //Pull direction pin low to move "forward"
@@ -226,23 +226,19 @@ void StepReverse() {
   stepCounter--;
 }
 
-// Returns the Nozzle to the Home Position
+// Sends the nozzle to the home position
 void returnHome() {
   while(!hasReturnedHome) {
-    //TODO(Rebecca): Add this into StepReverse()
-    setDriverReverse();
     StepReverse();
-    homePosition = digitalRead(homePin);
-    if (homePosition == LOW) {
-      //TODO(Rebecca): Add this into StepForward()
-      setDriverForward();
+    bool isAtHomePosition = digitalRead(homePin) == LOW;
+    if (isAtHomePosition) {
       hasReturnedHome = true;
       stepCounter = 0; 
     }
   }
 }
 
-// Returns the Ultrasonic Distance Reading
+// Returns the ultrasonic distance reading
 int getUltrasonicReading() {
   digitalWrite(triggerPin, LOW); 
   delayMicroseconds(TRIGGER_SWITCH_WAITTIME); // Waiting to update to LOW
@@ -250,7 +246,8 @@ int getUltrasonicReading() {
   delayMicroseconds(TRIGGER_PULSE_WAITTIME); // Waiting for return signal
   digitalWrite(triggerPin, LOW);
 
-  // Converting Ultrasonic Reading to Distance
+  // Converting ultrasonic reading to distance
+  //
   // Note: To convert the ultrasonic measurement from time (microseconds) to distance (mm),
   // the time for the wave to return needs to be halved as it presents both the time to hit
   // the object and return back to the sensor. Then this time needs to multipled by 
@@ -269,7 +266,7 @@ bool checkProximity() {
   
   bool isObjectPresent = ultrasonicDistance < DETECTION_THRESHOLD;
   if (isObjectPresent) {
-    // Debounce Distance Checking
+    // Debounce distance checking
     delay(CONTAINER_DEBOUNCE_WAITTIME);
     int ultrasonicDistance2 = getUltrasonicReading();
     bool isDistancePositive = ultrasonicDistance > 0;
