@@ -64,7 +64,7 @@ int rim2_Height = 0;
 bool isNozzleCentered = false; 
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   // Initialize Time of Flight Sensor
   sensor.VL6180xDefautSettings();
