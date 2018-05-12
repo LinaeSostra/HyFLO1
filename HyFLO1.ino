@@ -147,6 +147,18 @@ void resetDriver() {
   digitalWrite(enablePin, HIGH);
 }
 
+// Sets the Easy Driver pins to 'forward' direction
+void setDriverForward() {
+  digitalWrite(directionPin, LOW);
+  digitalWrite(enablePin, LOW);
+}
+
+// Set the Easy Driver pins to 'reverse' direction
+void setDriverReverse() {
+  digitalWrite(directionPin, HIGH);
+  digitalWrite(enablePin, LOW);
+}
+
 //TODO(Rebecca): Refactor StepForward & StepBackward to be more modular.
 void StepForward() {
   //Serial.println("Moving forward at default step mode.");
@@ -218,17 +230,14 @@ void StepReverse() {
 void returnHome() {
   while(!hasReturnedHome) {
     //TODO(Rebecca): Add this into StepReverse()
-    digitalWrite(directionPin, HIGH); // Reverse direction
-    digitalWrite(enablePin, LOW); //Pull enable pin low to allow motor control
+    setDriverReverse();
     StepReverse();
     homePosition = digitalRead(homePin);
     if (homePosition == LOW) {
       //TODO(Rebecca): Add this into StepForward()
-      digitalWrite(directionPin, LOW); //Pull direction pin low to move "forward"
-      digitalWrite(enablePin, LOW); //Pull enable pin low to allow motor control
+      setDriverForward();
       hasReturnedHome = true;
       stepCounter = 0; 
-      //break;
     }
   }
 }
@@ -264,7 +273,7 @@ bool checkProximity() {
     delay(CONTAINER_DEBOUNCE_WAITTIME);
     int ultrasonicDistance2 = getUltrasonicReading();
     bool isDistancePositive = ultrasonicDistance > 0;
-    int errorPercentage  = isDistancePositive ? 0 : (abs(ultrasonicDistance - ultrasonicDistance2) / ultrasonicDistance); 
+    int errorPercentage = isDistancePositive ? 0 : (abs(ultrasonicDistance - ultrasonicDistance2) / ultrasonicDistance); 
     
     // Checking if distance has stabilized
     bool hasDistanceStabilized = errorPercentage < MAX_ERROR_PERCENTAGE;
