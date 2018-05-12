@@ -64,7 +64,7 @@ int rim2_Height = 0;
 bool isNozzleCentered = false; 
 
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(9600);
 
   // Initialize Time of Flight Sensor
   sensor.VL6180xDefautSettings();
@@ -222,18 +222,18 @@ long getUltrasonicReading() {
   digitalWrite(triggerPin, LOW); 
   delayMicroseconds(TRIGGER_SWITCH_WAITTIME); // Waiting to update to LOW
   digitalWrite(triggerPin, HIGH);
-  delayMicroseconds(TRIGGER_PULSE_WAITTIME);
+  delayMicroseconds(TRIGGER_PULSE_WAITTIME); // Waiting for return signal
   digitalWrite(triggerPin, LOW);
 
   // Converting Ultrasonic Reading to Distance
-  // Note: To convert the ultrasonic measurement from microseconds to distance,
-  // the returnTime needs to be halved as returnTime presents both the time to hit
+  // Note: To convert the ultrasonic measurement from time (microseconds) to distance (mm),
+  // the time for the wave to return needs to be halved as it presents both the time to hit
   // the object and return back to the sensor. Then this time needs to multipled by 
-  // the speed of sound.
+  // the speed of sound. All of this is calculated as a float, and then casted into an int
+  // to prevent integer overflow/negative distance readings.
   //
   // distance = ((Time for wave to return / 2) * Speed of Sound)
-  long returnTime = pulseIn(echoPin, HIGH);
-  long distance = returnTime / 2 * SPEED_OF_SOUND;
+  int distance = (int) (pulseIn(echoPin, HIGH) / 2 * SPEED_OF_SOUND);
   return distance;
 }
 
@@ -245,6 +245,7 @@ void checkProximity() {
     delay(100);
     Serial.println(ultrasonicDistance);
     long ultrasonicDistance2 = getUltrasonicReading();
+    //TODO(Rebecca): This error is overkill 
     int error = abs(ultrasonicDistance - ultrasonicDistance2) / ultrasonicDistance;
     if( error < ERROR_PERCENTAGE ) {
       isContainerThere = true;
