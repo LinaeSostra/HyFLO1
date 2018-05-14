@@ -34,6 +34,8 @@ VL6180x sensor(VL6180X_ADDRESS);
 #define directionPin 5 // Set LOW to step 'forward', Set HIGH to step 'backwards'
 #define enablePin  6 // Controls whether GND is enabled
 
+#define STEPPER_SWITCH_WAITTIME 70 // microseconds
+
 int stepCounter = 0; 
 
 // Tactile Position Switches
@@ -163,6 +165,14 @@ void setDriverReverse() {
   digitalWrite(enablePin, LOW);
 }
 
+// Step the motor once by pulling the stepperPin high, then low
+void stepOnce() {
+  digitalWrite(stepperPin, HIGH);
+  delayMicroseconds(STEPPER_SWITCH_WAITTIME); //2000 was best
+  digitalWrite(stepperPin, LOW);
+  delayMicroseconds(STEPPER_SWITCH_WAITTIME); //2000 was best
+}
+
 //TODO(Rebecca): Refactor StepForward & StepBackward to be more modular.
 void StepForward() {
   setDriverForward();
@@ -170,10 +180,7 @@ void StepForward() {
 
   //TODO(Rebecca): This oversteps the first rim by too much. Refactor for real time-ness
   for (int i = 0; i < 100; i++) {
-    digitalWrite(stepperPin, HIGH); // Trigger one step forward
-    delayMicroseconds(70); // 2000 was best
-    digitalWrite(stepperPin, LOW); // Pull step pin low so it can be triggered again
-    delayMicroseconds(70); // 2000 was best
+    stepOnce();
   }
 
   uint8_t ToF_distance = sensor.getDistance();
@@ -217,17 +224,11 @@ void StepForward() {
   } 
 }
  
-//Reverse default microstep mode function
+// Reverse default microstep mode function
 void StepReverse() {
   setDriverReverse();
-  //Serial.println("Moving reverse at default step mode.");
-  digitalWrite(enablePin, LOW); //Pull enable pin low to allow motor control
-  digitalWrite(directionPin, HIGH); //Pull direction pin low to move "forward"
   for (int i = 0; i < 100; i++) {
-    digitalWrite(stepperPin, HIGH); //Trigger one step forward
-    delayMicroseconds(70); //2000 was best
-    digitalWrite(stepperPin, LOW); //Pull step pin low so it can be triggered again
-    delayMicroseconds(70); //2000 was best
+    stepOnce();
   }
   stepCounter--;
 }
