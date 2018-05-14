@@ -46,6 +46,12 @@ int8_t homePosition;
 bool hasReturnedHome = false;
 
 // Other Global Variables
+
+// Buad Rate = Data Rate in Bits per Second
+// Recommended Rate: 300, 600, 1200, 2400, 4800, 9600, 14400, 
+// 19200, 28800, 38400, 57600, or 115200
+#define BAUD_RATE 9600 
+
 // Rolling Average Smoothing Variables
 const int numReadings = 5;     // the number of readings to average
 int readings[numReadings];
@@ -66,7 +72,7 @@ int rim2_Height = 0;
 bool isNozzleCentered = false; 
 
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(BAUD_RATE);
 
   // Initialize Time of Flight Sensor
   sensor.VL6180xDefautSettings();
