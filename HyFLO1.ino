@@ -61,10 +61,10 @@ int average = 0;                // the average
 
 bool isScanComplete = false;
 
-int rim1_Location;
+int firstContainerRimLocation;
 bool isFirstRimLocated = false;
 int rim1_AfterCounter = 0; 
-int rim2_Location;
+int secondContainerRimLocation;
 
 int rim1_Height = 0;
 int rim2_Height = 0;
@@ -102,7 +102,6 @@ void setup() {
 ////////////////////////////////////////////////////////////////////////////////////
 
 void loop() {
-
   // Send the nozzle to home position 
   returnHome();
 
@@ -113,7 +112,9 @@ void loop() {
   bool isReadyToScan = isContainerThere && !isScanComplete;
   while (isReadyToScan) {
     StepForward();
-    //Check if scan is complete
+    // Check if scan is complete
+    // TODO(Rebecca): After the 2nd rim is found, the scan is complete. Current code is less optimal as it
+    // assumes once it hits the end tactile switch the scan is complete, and that takes more time than needed.
     bool isAtEndPosition = digitalRead(endPin) == LOW;
     if(isAtEndPosition) {
       isScanComplete = true;
@@ -122,20 +123,30 @@ void loop() {
       break;
     }
   }
-  while (isContainerThere && isScanComplete && !isNozzleCentered){
+
+  bool isReadyToCenterNozzle = isContainerThere && isScanComplete && !isNozzleCentered;
+  while (isReadyToCenterNozzle) {
     StepReverse();
     //Serial.print("Goto Step Counter = "); Serial.println(stepCounter);
-    if (stepCounter == (rim1_Location+rim2_Location)/2){
+    int containerLocation = calculateCenterOfContainer();
+    //TODO(Rebecca): Add error range of feasible stepCounter to containerLocation
+    bool hasReachedCenterLocation = stepCounter == containerLocation;
+    if (hasReachedCenterLocation) {
       isNozzleCentered = true;
       resetDriver();
       break;
     }
   }
+
+  //TODO(Rebecca): Add Pump Dispensing Functionality Here.
 }
 
 //FUNCTIONS /***********************************************************************
 ////////////////////////////////////////////////////////////////////////////////////
-
+int calculateCenterOfContainer() {
+  // Note: This is likely overkill, but to prevent integer overflow
+  return (firstContainerRimLocation / 2 + secondContainerRimLocation / 2);
+}
 /* Reset Easy Driver pins to default state by:
   - resetting the stepper (LOW)
   - the direction to move "forward" (LOW)
@@ -196,8 +207,8 @@ void StepForward() {
   // Find first maxima
   if(average > rim1_Height && !isFirstRimLocated && stepCounter > 30){
     rim1_Height = average;
-    rim1_Location = stepCounter;
-    //Serial.print("Rim 1 Location = "); Serial.println(rim1_Location);
+    firstContainerRimLocation = stepCounter;
+    //Serial.print("Rim 1 Location = "); Serial.println(firstContainerRimLocation);
   }
   
   if(average < rim1_Height && !isFirstRimLocated){
@@ -206,15 +217,15 @@ void StepForward() {
     if (rim1_AfterCounter == 120){
       isFirstRimLocated = true;
       rim1_AfterCounter = 0;
-      //Serial.println("Rim 1 Location"); Serial.println(rim1_Location);
+      //Serial.println("Rim 1 Location"); Serial.println(firstContainerRimLocation);
     }
   }
   
   // Find second Maxima
   if(average > rim2_Height && stepCounter > 10 && stepCounter < 265 && isFirstRimLocated){
     rim2_Height = average;
-    rim2_Location = stepCounter;
-    //Serial.print("Rim 2 Location"); Serial.println(rim2_Location);
+    secondContainerRimLocation = stepCounter;
+    //Serial.print("Rim 2 Location"); Serial.println(secondContainerRimLocation);
   } 
 }
  
