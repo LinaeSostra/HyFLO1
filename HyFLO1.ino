@@ -39,11 +39,9 @@ VL6180x sensor(TIME_OF_FLIGHT_ADDRESS);
 int stepCounter = 0; 
 
 // Tactile Position Switches
+// These tactile switches are HIGH when not pressed, and LOW when pressed
 #define homePin 7
 #define endPin 8
-
-int8_t endPosition;
-int8_t homePosition;
 
 bool hasReturnedHome = false;
 
@@ -98,10 +96,6 @@ void setup() {
   for (int thisReading = 0; thisReading < numReadings; thisReading++) {
     readings[thisReading] = 0;
   }
-
-  // Check current state of the system
-  homePosition = digitalRead(homePin);
-  endPosition = digitalRead(endPin);
 }
 
 // MAIN LOOP /**********************************************************************
@@ -113,17 +107,17 @@ void loop() {
   returnHome();
 
   // Check if there's a container present
-  bool isContainerThere = checkForObject();
+  bool isContainerThere = checkForContainer();
   
-  // cup is placed, so start prelim. scan. 
-  while (isContainerThere && !isScanComplete) {
+  // Once container is present, start scan
+  bool isReadyToScan = isContainerThere && !isScanComplete;
+  while (isReadyToScan) {
     StepForward();
     //Check if scan is complete
-    endPosition = digitalRead(endPin);
-    if(endPosition == LOW) {
+    bool isAtEndPosition = digitalRead(endPin) == LOW;
+    if(isAtEndPosition) {
       isScanComplete = true;
       //Serial.print("Total Steps: "); Serial.println(stepCounter);
-      homePosition = digitalRead(homePin);
       resetDriver();
       break;
     }
@@ -267,7 +261,7 @@ int getUltrasonicReading() {
 }
 
 // Checks whether an object has been placed in the vicinity or not
-bool checkForObject() {
+bool checkForContainer() {
   bool isContainerThere = false;
   int ultrasonicDistance = getUltrasonicReading();
   
