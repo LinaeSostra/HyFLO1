@@ -61,10 +61,9 @@ int average = 0;                // the average
 
 bool isScanComplete = false;
 
-int firstContainerRimLocation;
+int containerRimLocation, containerRimLocation2;
 bool isFirstRimLocated = false;
-int rim1_AfterCounter = 0; 
-int secondContainerRimLocation;
+int rim1_AfterCounter = 0;
 
 int rim1_Height = 0;
 int rim2_Height = 0;
@@ -143,10 +142,7 @@ void loop() {
 
 //FUNCTIONS /***********************************************************************
 ////////////////////////////////////////////////////////////////////////////////////
-int calculateCenterOfContainer() {
-  // Note: This is likely overkill, but to prevent integer overflow
-  return (firstContainerRimLocation / 2 + secondContainerRimLocation / 2);
-}
+
 /* Reset Easy Driver pins to default state by:
   - resetting the stepper (LOW)
   - the direction to move "forward" (LOW)
@@ -207,8 +203,8 @@ void StepForward() {
   // Find first maxima
   if(average > rim1_Height && !isFirstRimLocated && stepCounter > 30){
     rim1_Height = average;
-    firstContainerRimLocation = stepCounter;
-    //Serial.print("Rim 1 Location = "); Serial.println(firstContainerRimLocation);
+    containerRimLocation = stepCounter;
+    //Serial.print("Rim 1 Location = "); Serial.println(containerRimLocation);
   }
   
   if(average < rim1_Height && !isFirstRimLocated){
@@ -217,15 +213,15 @@ void StepForward() {
     if (rim1_AfterCounter == 120){
       isFirstRimLocated = true;
       rim1_AfterCounter = 0;
-      //Serial.println("Rim 1 Location"); Serial.println(firstContainerRimLocation);
+      //Serial.println("Rim 1 Location"); Serial.println(containerRimLocation);
     }
   }
   
   // Find second Maxima
   if(average > rim2_Height && stepCounter > 10 && stepCounter < 265 && isFirstRimLocated){
     rim2_Height = average;
-    secondContainerRimLocation = stepCounter;
-    //Serial.print("Rim 2 Location"); Serial.println(secondContainerRimLocation);
+    containerRimLocation2 = stepCounter;
+    //Serial.print("Rim 2 Location"); Serial.println(containerRimLocation2);
   } 
 }
  
@@ -248,6 +244,11 @@ void returnHome() {
       stepCounter = 0; 
     }
   }
+}
+
+int calculateCenterOfContainer() {
+  // Note: This is likely overkill, but to prevent integer overflow
+  return (containerRimLocation / 2 + containerRimLocation2 / 2);
 }
 
 // Returns the ultrasonic distance reading
