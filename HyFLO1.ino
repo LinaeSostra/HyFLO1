@@ -7,10 +7,10 @@
 #include "src/SparkFun_VL6180X.h"
 
 // Time of Flight Sensor
-#define VL6180X_ADDRESS 0x29
+#define TIME_OF_FLIGHT_ADDRESS 0x29
 #define TIME_OF_FLIGHT_MAX_DISTANCE 200 // mm
 
-VL6180x sensor(VL6180X_ADDRESS);
+VL6180x sensor(TIME_OF_FLIGHT_ADDRESS);
 
 // Ultrasonic Sensor
 /*
@@ -113,7 +113,7 @@ void loop() {
   returnHome();
 
   // Check if there's a container present
-  bool isContainerThere = checkProximity();
+  bool isContainerThere = checkForObject();
   
   // cup is placed, so start prelim. scan. 
   while (isContainerThere && !isScanComplete) {
@@ -267,7 +267,7 @@ int getUltrasonicReading() {
 }
 
 // Checks whether an object has been placed in the vicinity or not
-bool checkProximity() {
+bool checkForObject() {
   bool isContainerThere = false;
   int ultrasonicDistance = getUltrasonicReading();
   
