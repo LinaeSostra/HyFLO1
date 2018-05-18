@@ -6,6 +6,8 @@
  */
 #include "src/SparkFun_VL6180X.h"
 
+#define DEBUG // comment this line to disable debug (Serial Prints)
+
 // Time of Flight Sensor
 #define TIME_OF_FLIGHT_ADDRESS 0x29
 #define TIME_OF_FLIGHT_MAX_DISTANCE 200 // mm
@@ -184,15 +186,8 @@ void StepForward() {
     stepOnce();
   }
 
-  uint8_t ToF_distance = sensor.getDistance();
+  smoothReading();
 
-  total = total - readings[readIndex];
-  readings[readIndex] = ToF_distance;
-  total = total + readings[readIndex];
-  readIndex = (readIndex + 1) % AVERAGE_SAMPLE_SIZE;
-  average = TIME_OF_FLIGHT_MAX_DISTANCE - (total / AVERAGE_SAMPLE_SIZE); 
-
-  Serial.print("Distance = "); Serial.println(average);
   stepCounter++;
 
   // Find first maxima
@@ -239,6 +234,20 @@ void returnHome() {
       stepCounter = 0; 
     }
   }
+}
+
+void smoothReading() {
+  uint8_t ToF_distance = sensor.getDistance();
+
+  total = total - readings[readIndex];
+  readings[readIndex] = ToF_distance;
+  total = total + readings[readIndex];
+  readIndex = (readIndex + 1) % AVERAGE_SAMPLE_SIZE;
+  average = TIME_OF_FLIGHT_MAX_DISTANCE - (total / AVERAGE_SAMPLE_SIZE);
+
+#ifdef DEBUG
+  Serial.print("Distance = "); Serial.println(average);
+#endif
 }
 
 int calculateCenterOfContainer() {
