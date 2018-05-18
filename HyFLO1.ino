@@ -53,8 +53,8 @@ bool hasReturnedHome = false;
 #define BAUD_RATE 9600 
 
 // Rolling Average Smoothing Variables
-const int numReadings = 5;     // the number of readings to average
-int readings[numReadings];
+const int AVERAGE_SAMPLE_SIZE = 5;     // the number of readings to average
+int readings[AVERAGE_SAMPLE_SIZE];
 int readIndex = 0;              // the index of the current reading
 int total = 0;                  // the running total
 int average = 0;                // the average
@@ -92,7 +92,7 @@ void setup() {
   pinMode(endPin, INPUT_PULLUP);
 
   // Initializing readings array to 0s. (for running average algorithm) 
-  for (int thisReading = 0; thisReading < numReadings; thisReading++) {
+  for (int thisReading = 0; thisReading < AVERAGE_SAMPLE_SIZE; thisReading++) {
     readings[thisReading] = 0;
   }
 }
@@ -189,13 +189,8 @@ void StepForward() {
   total = total - readings[readIndex];
   readings[readIndex] = ToF_distance;
   total = total + readings[readIndex];
-  readIndex = readIndex + 1;
-
-  if (readIndex >= numReadings) { // if we're at the end of the array...
-    readIndex = 0;
-  }
-
-  average = TIME_OF_FLIGHT_MAX_DISTANCE - (total / numReadings); 
+  readIndex = (readIndex + 1) % AVERAGE_SAMPLE_SIZE;
+  average = TIME_OF_FLIGHT_MAX_DISTANCE - (total / AVERAGE_SAMPLE_SIZE); 
 
   Serial.print("Distance = "); Serial.println(average);
   stepCounter++;
