@@ -65,7 +65,7 @@ const int MINIMUM_CUP_HEIGHT = 45; // mm
 
 int rimLocation, rimLocation2 = 0;
 int rimHeight, rimHeight2 = 0;
-bool isFirstRimLocated = false;
+bool isFirstRimLocated, isSecondRimLocated = false;
 
 bool isNozzleCentered = false;
 bool isScanComplete = false;
@@ -211,33 +211,55 @@ void StepForward() {
   // Find first rim
   findFirstRim();
   
-  // Find second Maxima
-  if(averageHeight > rimHeight2 && stepCounter > 10 && stepCounter < 265 && isFirstRimLocated){
+  // Find second rim
+  if(isFirstRimLocated) {
+    isSecondRimLocated = findRim(false);
+  }
+/*  if(averageHeight > rimHeight2 && stepCounter > 10 && stepCounter < 265 && isFirstRimLocated){
     rimHeight2 = averageHeight;
     rimLocation2 = stepCounter;
     //Serial.print("Rim 2 Location"); Serial.println(rimLocation2);
-  } 
+  }*/
 }
 
 void findFirstRim() {
-  if(!isFirstRimLocated){
+  isFirstRimLocated = findRim(true);
+}
+
+bool findRim(bool isFirstRim) {
+  bool isRimLocated = isFirstRim ? isFirstRimLocated : isSecondRimLocated;
+  int height = isFirstRim ? rimHeight : rimHeight2;
+  int location = isFirstRim ? rimLocation : rimLocation2;
+  
+  if(!isRimLocated){
     bool hasPassedSketchyRegion = stepCounter > 30; // This sketchy region won't be an issue with the new rig.
     bool isReasonableHeight = averageHeight > MINIMUM_CUP_HEIGHT;
 
     if(hasPassedSketchyRegion && isReasonableHeight) {
-      bool hasFoundNewRim = averageHeight > rimHeight;
+      bool hasFoundNewRim = averageHeight > height;
       
       if(hasFoundNewRim) {
-        rimHeight = averageHeight;
-        rimLocation = stepCounter;
+        updateRimParameters(isFirstRim, averageHeight, stepCounter);
       } else {
-        int rimStabilizedCounter = (rimLocation == 0) ? 0 : (stepCounter - rimLocation);
+        int rimStabilizedCounter = (location == 0) ? 0 : (stepCounter - location);
         bool hasRimStabilized = rimStabilizedCounter >= RIM_THRESHOLD_STEPS;
         if(hasRimStabilized) {
-          isFirstRimLocated = true;
+          isRimLocated = true;
         }
       }
     }
+  }
+
+  return isRimLocated;
+}
+
+void updateRimParameters(bool isFirstRim, int height, int location) {
+  if (isFirstRim) {
+    rimHeight = height;
+    rimLocation = location;
+  } else {
+    rimHeight2 = height;
+    rimLocation2 = location;
   }
 }
  
