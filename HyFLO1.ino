@@ -58,17 +58,14 @@ bool hasReturnedHome = false;
 const int MAX_SAMPLES = 5;     // the number of readings to average
 int readings[MAX_SAMPLES];
 int readIndex = 0;              // the index of the current reading
-int average = 0;                // the average
+int averageHeight = 0;                // the average
 
 const int RIM_THRESHOLD_STEPS = 120;
 const int MINIMUM_CUP_HEIGHT = 45; // mm
 
-int containerRimLocation, containerRimLocation2;
+int rimLocation, rimLocation2 = 0;
+int rimHeight, rimHeight2 = 0;
 bool isFirstRimLocated = false;
-int rim1_AfterCounter = 0;
-
-int rim1_Height = 0;
-int rim2_Height = 0;
 
 bool isNozzleCentered = false;
 bool isScanComplete = false;
@@ -183,10 +180,10 @@ void smoothReading() {
   readings[readIndex] = distance;
   int total = getRunningTotal();
   readIndex = (readIndex + 1) % MAX_SAMPLES;
-  average = TIME_OF_FLIGHT_MAX_DISTANCE - (total / MAX_SAMPLES);
+  averageHeight = TIME_OF_FLIGHT_MAX_DISTANCE - (total / MAX_SAMPLES);
 
 #ifdef DEBUG
-  Serial.print("Distance = "); Serial.println(average);
+  Serial.print("Distance = "); Serial.println(averageHeight);
 #endif
 }
 
@@ -211,32 +208,37 @@ void StepForward() {
   smoothReading();
   stepCounter++;
 
-  // Find first maxima
+  // Find first rim
+  findFirstRim();
+  
+  // Find second Maxima
+  if(averageHeight > rimHeight2 && stepCounter > 10 && stepCounter < 265 && isFirstRimLocated){
+    rimHeight2 = averageHeight;
+    rimLocation2 = stepCounter;
+    //Serial.print("Rim 2 Location"); Serial.println(rimLocation2);
+  } 
+}
+
+void findFirstRim() {
   if(!isFirstRimLocated){
-    
-    //TODO(Rebecca): This Sketchy Region won't be an issue with the new Rig.
-    bool hasPassedSketchyRegion = stepCounter > 30;
-    bool isReasonableHeight = average > MINIMUM_CUP_HEIGHT;
+    bool hasPassedSketchyRegion = stepCounter > 30; // This sketchy region won't be an issue with the new rig.
+    bool isReasonableHeight = averageHeight > MINIMUM_CUP_HEIGHT;
+
     if(hasPassedSketchyRegion && isReasonableHeight) {
-      if(average > rim1_Height) {
-        rim1_Height = average;
-        rim1_AfterCounter = 0;
-        containerRimLocation = stepCounter;
+      bool hasFoundNewRim = averageHeight > rimHeight;
+      
+      if(hasFoundNewRim) {
+        rimHeight = averageHeight;
+        rimLocation = stepCounter;
       } else {
-        rim1_AfterCounter++;
-        if(rim1_AfterCounter >= RIM_THRESHOLD_STEPS) {
+        int rimStabilizedCounter = (rimLocation == 0) ? 0 : (stepCounter - rimLocation);
+        bool hasRimStabilized = rimStabilizedCounter >= RIM_THRESHOLD_STEPS;
+        if(hasRimStabilized) {
           isFirstRimLocated = true;
         }
       }
     }
   }
-  
-  // Find second Maxima
-  if(average > rim2_Height && stepCounter > 10 && stepCounter < 265 && isFirstRimLocated){
-    rim2_Height = average;
-    containerRimLocation2 = stepCounter;
-    //Serial.print("Rim 2 Location"); Serial.println(containerRimLocation2);
-  } 
 }
  
 // Reverse default microstep mode function
@@ -262,7 +264,7 @@ void returnHome() {
 
 int calculateCenterOfContainer() {
   // Note: This is likely overkill, but to prevent integer overflow
-  return (containerRimLocation / 2 + containerRimLocation2 / 2);
+  return (rimLocation / 2 + rimLocation2 / 2);
 }
 
 // Returns the ultrasonic distance reading
