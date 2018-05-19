@@ -55,13 +55,13 @@ bool hasReturnedHome = false;
 #define BAUD_RATE 9600 
 
 // Rolling Average Smoothing Variables
-const int AVERAGE_SAMPLE_SIZE = 5;     // the number of readings to average
-int readings[AVERAGE_SAMPLE_SIZE];
+const int MAX_SAMPLES = 5;     // the number of readings to average
+int readings[MAX_SAMPLES];
 int readIndex = 0;              // the index of the current reading
-int total = 0;                  // the running total
 int average = 0;                // the average
 
-bool isScanComplete = false;
+const int RIM_THRESHOLD_STEPS = 120;
+const int MINIMUM_CUP_HEIGHT = 45; // mm
 
 int containerRimLocation, containerRimLocation2;
 bool isFirstRimLocated = false;
@@ -70,7 +70,8 @@ int rim1_AfterCounter = 0;
 int rim1_Height = 0;
 int rim2_Height = 0;
 
-bool isNozzleCentered = false; 
+bool isNozzleCentered = false;
+bool isScanComplete = false;
 
 void setup() {
   Serial.begin(BAUD_RATE);
@@ -94,7 +95,7 @@ void setup() {
   pinMode(endPin, INPUT_PULLUP);
 
   // Initializing readings array to 0s. (for running average algorithm) 
-  for (int thisReading = 0; thisReading < AVERAGE_SAMPLE_SIZE; thisReading++) {
+  for (int thisReading = 0; thisReading < MAX_SAMPLES; thisReading++) {
     readings[thisReading] = 0;
   }
 }
@@ -176,6 +177,27 @@ void stepOnce() {
   delayMicroseconds(STEPPER_SWITCH_WAITTIME); //2000 was best
 }
 
+void smoothReading() {
+  uint8_t distance = sensor.getDistance();
+
+  readings[readIndex] = distance;
+  int total = getRunningTotal();
+  readIndex = (readIndex + 1) % MAX_SAMPLES;
+  average = TIME_OF_FLIGHT_MAX_DISTANCE - (total / MAX_SAMPLES);
+
+#ifdef DEBUG
+  Serial.print("Distance = "); Serial.println(average);
+#endif
+}
+
+int getRunningTotal() {
+  int total = 0;
+  for(int i = 0; i < MAX_SAMPLES; i++) {
+    total = total + readings[i];
+  }
+  return total;
+}
+
 //TODO(Rebecca): Refactor StepForward & StepBackward to be more modular.
 void StepForward() {
   setDriverForward();
@@ -187,23 +209,25 @@ void StepForward() {
   }
 
   smoothReading();
-
   stepCounter++;
 
   // Find first maxima
-  if(average > rim1_Height && !isFirstRimLocated && stepCounter > 30){
-    rim1_Height = average;
-    containerRimLocation = stepCounter;
-    //Serial.print("Rim 1 Location = "); Serial.println(containerRimLocation);
-  }
-  
-  if(average < rim1_Height && !isFirstRimLocated){
-    rim1_AfterCounter++;
-    //Serial.print("R1 AfterCounter = "); Serial.println(rim1_AfterCounter);
-    if (rim1_AfterCounter == 120){
-      isFirstRimLocated = true;
-      rim1_AfterCounter = 0;
-      //Serial.println("Rim 1 Location"); Serial.println(containerRimLocation);
+  if(!isFirstRimLocated){
+    
+    //TODO(Rebecca): This Sketchy Region won't be an issue with the new Rig.
+    bool hasPassedSketchyRegion = stepCounter > 30;
+    bool isReasonableHeight = average > MINIMUM_CUP_HEIGHT;
+    if(hasPassedSketchyRegion && isReasonableHeight) {
+      if(average > rim1_Height) {
+        rim1_Height = average;
+        rim1_AfterCounter = 0;
+        containerRimLocation = stepCounter;
+      } else {
+        rim1_AfterCounter++;
+        if(rim1_AfterCounter >= RIM_THRESHOLD_STEPS) {
+          isFirstRimLocated = true;
+        }
+      }
     }
   }
   
@@ -234,20 +258,6 @@ void returnHome() {
       stepCounter = 0; 
     }
   }
-}
-
-void smoothReading() {
-  uint8_t ToF_distance = sensor.getDistance();
-
-  total = total - readings[readIndex];
-  readings[readIndex] = ToF_distance;
-  total = total + readings[readIndex];
-  readIndex = (readIndex + 1) % AVERAGE_SAMPLE_SIZE;
-  average = TIME_OF_FLIGHT_MAX_DISTANCE - (total / AVERAGE_SAMPLE_SIZE);
-
-#ifdef DEBUG
-  Serial.print("Distance = "); Serial.println(average);
-#endif
 }
 
 int calculateCenterOfContainer() {
