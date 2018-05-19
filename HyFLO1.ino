@@ -60,7 +60,7 @@ int readings[MAX_SAMPLES];
 int readIndex = 0;              // the index of the current reading
 int averageHeight = 0;                // the average
 
-const int RIM_THRESHOLD_STEPS = 120;
+const int RIM_THRESHOLD_STEPS = 15;
 const int MINIMUM_CUP_HEIGHT = 45; // mm
 
 int rimLocation, rimLocation2 = 0;
@@ -115,7 +115,8 @@ void loop() {
     // TODO(Rebecca): After the 2nd rim is found, the scan is complete. Current code is less optimal as it
     // assumes once it hits the end tactile switch the scan is complete, and that takes more time than needed.
     bool isAtEndPosition = digitalRead(endPin) == LOW;
-    if(isAtEndPosition) {
+    bool areAllRimsLocated = isFirstRimLocated && isSecondRimLocated;
+    if(isAtEndPosition || areAllRimsLocated) {
       isScanComplete = true;
       //Serial.print("Total Steps: "); Serial.println(stepCounter);
       resetDriver();
@@ -183,7 +184,7 @@ void smoothReading() {
   averageHeight = TIME_OF_FLIGHT_MAX_DISTANCE - (total / MAX_SAMPLES);
 
 #ifdef DEBUG
-  Serial.print("Distance = "); Serial.println(averageHeight);
+  Serial.print("Time of Flight Height = "); Serial.println(averageHeight);
 #endif
 }
 
@@ -208,13 +209,7 @@ void StepForward() {
   smoothReading();
   stepCounter++;
 
-  // Find first rim
-  findFirstRim();
-  
-  // Find second rim
-  if(isFirstRimLocated) {
-    isSecondRimLocated = findRim(false);
-  }
+  findAllRims();
 /*  if(averageHeight > rimHeight2 && stepCounter > 10 && stepCounter < 265 && isFirstRimLocated){
     rimHeight2 = averageHeight;
     rimLocation2 = stepCounter;
@@ -222,8 +217,19 @@ void StepForward() {
   }*/
 }
 
-void findFirstRim() {
+void findAllRims() {
+  // Find first rim
   isFirstRimLocated = findRim(true);
+
+  // Find second rim
+  if(isFirstRimLocated) {
+    isSecondRimLocated = findRim(false);
+  }
+
+#ifdef DEBUG
+  Serial.print("isFirstRimLocated = "); Serial.println(isFirstRimLocated);
+  Serial.print("isSecondRimLocated = "); Serial.println(isSecondRimLocated);
+#endif
 }
 
 bool findRim(bool isFirstRim) {
@@ -232,7 +238,8 @@ bool findRim(bool isFirstRim) {
   int location = isFirstRim ? rimLocation : rimLocation2;
   
   if(!isRimLocated){
-    bool hasPassedSketchyRegion = stepCounter > 30; // This sketchy region won't be an issue with the new rig.
+    int hacking = isFirstRim ? 30 : rimLocation + 30;
+    bool hasPassedSketchyRegion = stepCounter > hacking; // This sketchy region won't be an issue with the new rig.
     bool isReasonableHeight = averageHeight > MINIMUM_CUP_HEIGHT;
 
     if(hasPassedSketchyRegion && isReasonableHeight) {
@@ -254,6 +261,12 @@ bool findRim(bool isFirstRim) {
 }
 
 void updateRimParameters(bool isFirstRim, int height, int location) {
+#ifdef DEBUG
+  Serial.print("Is this the first Rim? "); Serial.println(isFirstRim);
+  Serial.print("newRimHeight = "); Serial.println(height);
+  Serial.print("newRimLocation = "); Serial.println(location);
+#endif
+
   if (isFirstRim) {
     rimHeight = height;
     rimLocation = location;
