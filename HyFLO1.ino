@@ -112,8 +112,6 @@ void loop() {
   while (isReadyToScan) {
     StepForward();
     // Check if scan is complete
-    // TODO(Rebecca): After the 2nd rim is found, the scan is complete. Current code is less optimal as it
-    // assumes once it hits the end tactile switch the scan is complete, and that takes more time than needed.
     bool isAtEndPosition = digitalRead(endPin) == LOW;
     bool areAllRimsLocated = isFirstRimLocated && isSecondRimLocated;
     if(isAtEndPosition || areAllRimsLocated) {
@@ -210,11 +208,6 @@ void StepForward() {
   stepCounter++;
 
   findAllRims();
-/*  if(averageHeight > rimHeight2 && stepCounter > 10 && stepCounter < 265 && isFirstRimLocated){
-    rimHeight2 = averageHeight;
-    rimLocation2 = stepCounter;
-    //Serial.print("Rim 2 Location"); Serial.println(rimLocation2);
-  }*/
 }
 
 void findAllRims() {
@@ -256,7 +249,6 @@ bool findRim(bool isFirstRim) {
       }
     }
   }
-
   return isRimLocated;
 }
 
