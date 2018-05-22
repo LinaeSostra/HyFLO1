@@ -10,7 +10,7 @@
 
 // Time of Flight Sensor
 #define TIME_OF_FLIGHT_ADDRESS 0x29
-#define TIME_OF_FLIGHT_MAX_DISTANCE 200 // mm
+#define TIME_OF_FLIGHT_MAX_DISTANCE 210 // mm
 
 VL6180x sensor(TIME_OF_FLIGHT_ADDRESS);
 
@@ -61,7 +61,7 @@ int readIndex = 0;              // the index of the current reading
 int averageHeight = 0;          // the average
 
 const int RIM_THRESHOLD_STEPS = 15;
-const int MINIMUM_CUP_HEIGHT = 45; // mm
+const int MINIMUM_CUP_HEIGHT = 15; // mm
 
 int rimLocation, rimLocation2 = 0;
 int rimHeight, rimHeight2 = 0;
@@ -74,8 +74,12 @@ void setup() {
   Serial.begin(BAUD_RATE);
 
   // Initialize Time of Flight Sensor
+  if(sensor.VL6180xInit() != 0) {
+    Serial.println("FAILED TO INITIALIZE");
+  }
   sensor.VL6180xDefautSettings();
-  sensor.VL6180xInit();
+
+  delay(1000);
 
   // Initialize Ultrasonic Sensor
   pinMode(triggerPin, OUTPUT);
@@ -174,8 +178,10 @@ void stepOnce() {
 }
 
 void smoothReading() {
-  uint8_t distance = sensor.getDistance();
-
+  int distance = sensor.getDistance();
+#ifdef DEBUG
+  Serial.print("Time of Flight Raw Distance = "); Serial.println(distance); 
+#endif
   readings[readIndex] = distance;
   int total = getRunningTotal();
   readIndex = (readIndex + 1) % MAX_SAMPLES;
@@ -321,8 +327,10 @@ int getUltrasonicReading() {
 bool checkForContainer() {
   bool isContainerThere = false;
   int ultrasonicDistance = getUltrasonicReading();
+  int temp = getUltrasonicReading();
 #ifdef DEBUG
   Serial.print("Ultrasonic Distance: "); Serial.println(ultrasonicDistance);
+  Serial.print("Temp Distance: "); Serial.println(temp);
 #endif
   
   bool isObjectPresent = ultrasonicDistance < DETECTION_THRESHOLD;
