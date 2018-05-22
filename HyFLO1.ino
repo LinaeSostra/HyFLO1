@@ -58,7 +58,7 @@ bool hasReturnedHome = false;
 const int MAX_SAMPLES = 5;     // the number of readings to average
 int readings[MAX_SAMPLES];
 int readIndex = 0;              // the index of the current reading
-int averageHeight = 0;                // the average
+int averageHeight = 0;          // the average
 
 const int RIM_THRESHOLD_STEPS = 15;
 const int MINIMUM_CUP_HEIGHT = 45; // mm
@@ -241,15 +241,17 @@ bool findRim(bool isFirstRim) {
       if(hasFoundNewRim) {
         updateRimParameters(isFirstRim, averageHeight, stepCounter);
       } else {
-        int rimStabilizedCounter = (location == 0) ? 0 : (stepCounter - location);
-        bool hasRimStabilized = rimStabilizedCounter >= RIM_THRESHOLD_STEPS;
-        if(hasRimStabilized) {
-          isRimLocated = true;
-        }
+        isRimLocated = hasRimStabilized(location);
       }
     }
   }
   return isRimLocated;
+}
+
+bool hasRimStabilized(int location) {
+  int rimStabilizedCounter = (location == 0) ? 0 : (stepCounter - location);
+  bool hasRimStabilized = rimStabilizedCounter >= RIM_THRESHOLD_STEPS;
+  return hasRimStabilized ? true : false;
 }
 
 void updateRimParameters(bool isFirstRim, int height, int location) {
