@@ -321,14 +321,17 @@ int getUltrasonicReading() {
 bool checkForContainer() {
   bool isContainerThere = false;
   int ultrasonicDistance = getUltrasonicReading();
+#ifdef DEBUG
+  Serial.print("Ultrasonic Distance: "); Serial.println(ultrasonicDistance);
+#endif
   
   bool isObjectPresent = ultrasonicDistance < DETECTION_THRESHOLD;
   if (isObjectPresent) {
     // Debounce distance checking
     delay(CONTAINER_DEBOUNCE_WAITTIME);
     int ultrasonicDistance2 = getUltrasonicReading();
-    bool isDistancePositive = ultrasonicDistance > 0;
-    int errorPercentage = isDistancePositive ? 0 : (abs(ultrasonicDistance - ultrasonicDistance2) / ultrasonicDistance); 
+    bool isDistancePositive = ultrasonicDistance > 2;
+    int errorPercentage = isDistancePositive ? (abs(ultrasonicDistance - ultrasonicDistance2) / ultrasonicDistance) : 0; 
     
     // Checking if distance has stabilized
     bool hasDistanceStabilized = errorPercentage < MAX_ERROR_PERCENTAGE;
