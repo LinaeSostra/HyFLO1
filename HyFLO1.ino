@@ -25,7 +25,7 @@ VL6180x sensor(TIME_OF_FLIGHT_ADDRESS);
 
 #define SPEED_OF_SOUND 0.343 // mm per microsecond
 #define DETECTION_THRESHOLD 100 // mm
-#define MAX_ERROR_PERCENTAGE 0.05 // % (unitless)
+#define MAX_ERROR_PERCENTAGE 0.1 // % (unitless)
 
 #define TRIGGER_SWITCH_WAITTIME 2 // microseconds
 #define TRIGGER_PULSE_WAITTIME 10 // microseconds
@@ -61,11 +61,13 @@ int readIndex = 0;              // the index of the current reading
 int averageHeight = 0;          // the average
 
 const int RIM_THRESHOLD_STEPS = 15;
-const int MINIMUM_CUP_HEIGHT = 15; // mm
+const int MINIMUM_CUP_HEIGHT = 10; // mm
+const double HEIGHT_DROP_PERCENTAGE = 0.3; // % (unitless)
 
 int rimLocation, rimLocation2 = 0;
 int rimHeight, rimHeight2 = 0;
 bool isFirstRimLocated, isSecondRimLocated = false;
+bool hasPassedFirstRim = false;
 
 bool isNozzleCentered = false;
 bool isScanComplete = false;
@@ -119,6 +121,10 @@ void loop() {
     bool isAtEndPosition = digitalRead(endPin) == LOW;
     bool areAllRimsLocated = isFirstRimLocated && isSecondRimLocated;
     if(isAtEndPosition || areAllRimsLocated) {
+      #ifdef DEBUG
+      Serial.print("Rim 1 (Height, Location): "); Serial.print(rimHeight); Serial.print(", "); Serial.println(rimLocation);
+      Serial.print("Rim 2 (Height, Location): "); Serial.print(rimHeight2); Serial.print(", "); Serial.println(rimLocation2);
+      #endif
       isScanComplete = true;
       //Serial.print("Total Steps: "); Serial.println(stepCounter);
       resetDriver();
@@ -179,9 +185,7 @@ void stepOnce() {
 
 void smoothReading() {
   int distance = sensor.getDistance();
-#ifdef DEBUG
-  Serial.print("Time of Flight Raw Distance = "); Serial.println(distance); 
-#endif
+
   readings[readIndex] = distance;
   int total = getRunningTotal();
   readIndex = (readIndex + 1) % MAX_SAMPLES;
@@ -206,7 +210,7 @@ void StepForward() {
   //Serial.println("Moving forward at default step mode.");
 
   //TODO(Rebecca): This oversteps the first rim by too much. Refactor for real time-ness
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < 100 ; i++) {
     stepOnce();
   }
 
@@ -237,15 +241,35 @@ bool findRim(bool isFirstRim) {
   int location = isFirstRim ? rimLocation : rimLocation2;
   
   if(!isRimLocated){
-    int hacking = isFirstRim ? 30 : rimLocation + 30;
+    int hacking = 30;
     bool hasPassedSketchyRegion = stepCounter > hacking; // This sketchy region won't be an issue with the new rig.
     bool isReasonableHeight = averageHeight > MINIMUM_CUP_HEIGHT;
 
+    double rimError = abs(rimHeight - averageHeight)/double(rimHeight);
+    #ifdef DEBUG
+      Serial.print("Rim Error: "); Serial.println(rimError);
+    #endif
+    if (!isFirstRim && rimError > HEIGHT_DROP_PERCENTAGE) {
+        hasPassedFirstRim = true;
+      }
+
     if(hasPassedSketchyRegion && isReasonableHeight) {
-      bool hasFoundNewRim = averageHeight > height;
       
+      bool hasFoundNewRim = averageHeight > height;
       if(hasFoundNewRim) {
-        updateRimParameters(isFirstRim, averageHeight, stepCounter);
+        if (isFirstRim) {
+          updateRimParameters(isFirstRim, averageHeight, stepCounter);
+        } else {
+          #ifdef DEBUG
+            Serial.print("Rim Difference [Rim 1, Rim2]: "); Serial.print(rimHeight); Serial.print(", "); Serial.println(averageHeight);
+            Serial.print("Rim Error: "); Serial.println(rimError);
+            Serial.print("Passed First Rim?: "); Serial.println(hasPassedFirstRim);
+          #endif
+
+          if (rimError < MAX_ERROR_PERCENTAGE && hasPassedFirstRim) {
+            updateRimParameters(isFirstRim, averageHeight, stepCounter);
+          }
+        }
       } else {
         isRimLocated = hasRimStabilized(location);
       }
@@ -339,7 +363,7 @@ bool checkForContainer() {
     delay(CONTAINER_DEBOUNCE_WAITTIME);
     int ultrasonicDistance2 = getUltrasonicReading();
     bool isDistancePositive = ultrasonicDistance > 2;
-    int errorPercentage = isDistancePositive ? (abs(ultrasonicDistance - ultrasonicDistance2) / ultrasonicDistance) : 0; 
+    double errorPercentage = isDistancePositive ? (abs(ultrasonicDistance - ultrasonicDistance2) / double(ultrasonicDistance)) : 0; 
     
     // Checking if distance has stabilized
     bool hasDistanceStabilized = errorPercentage < MAX_ERROR_PERCENTAGE;
