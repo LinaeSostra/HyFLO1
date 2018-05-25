@@ -124,6 +124,7 @@ void loop() {
   bool isReadyToScan = isContainerThere && !isScanComplete;
   while (isReadyToScan) {
     StepForward();
+    findAllRims();
     // Check if scan is complete
     bool isAtEndPosition = digitalRead(endPin) == LOW;
     bool areAllRimsLocated = isFirstRimLocated && isSecondRimLocated;
@@ -154,7 +155,7 @@ void loop() {
   
   bool isReadyToDispenseLiquid = isContainerThere && isScanComplete && isNozzleCentered && !hasFinishedDispensing;
   while(isReadyToDispenseLiquid) {
-    analogWrite(pumpPin, 255);
+    //analogWrite(pumpPin, 255);
     delay(1000); // BE SUPER CAREFUL WITH THIS!!!
     // TODO(Rebecca): Add Half Fill Functionality
     analogWrite(pumpPin, 0);
@@ -165,11 +166,7 @@ void loop() {
   }
 
   if(!isContainerThere) {
-    analogWrite(pumpPin, 0);
-    hasFinishedDispensing = false;
-    isScanComplete = false;
-    isNozzleCentered = false;
-    hasReturnedHome = false;
+    resetSystem();
   }
 }
 
@@ -208,12 +205,12 @@ void stepOnce() {
 }
 
 void smoothReading() {
-  int distance = sensor.getDistance();
+  int height = getTimeOfFlightReading();
 
-  readings[readIndex] = distance;
+  readings[readIndex] = height;
   int total = getRunningTotal();
   readIndex = (readIndex + 1) % MAX_SAMPLES;
-  averageHeight = TIME_OF_FLIGHT_MAX_DISTANCE - (total / MAX_SAMPLES);
+  averageHeight = total / MAX_SAMPLES;
 
 #ifdef DEBUG
   Serial.print("Time of Flight Height = "); Serial.println(averageHeight);
@@ -228,23 +225,17 @@ int getRunningTotal() {
   return total;
 }
 
-//TODO(Rebecca): Refactor StepForward & StepBackward to be more modular.
 void StepForward() {
   setDriverForward();
-  //Serial.println("Moving forward at default step mode.");
-
-  //TODO(Rebecca): This oversteps the first rim by too much. Refactor for real time-ness
   for (int i = 0; i < 100 ; i++) {
     stepOnce();
   }
-
-  smoothReading();
   stepCounter++;
-
-  findAllRims();
 }
 
 void findAllRims() {
+  smoothReading();
+
   // Find first rim
   isFirstRimLocated = findRim(true);
 
@@ -346,11 +337,32 @@ void returnHome() {
 }
 
 int calculateCenterOfContainer() {
+  if (rimLocation == 0 || rimLocation2 == 0) {
+    resetSystem();
+    return 0;
+  }
   // Note: This is likely overkill, but to prevent integer overflow
   return (rimLocation / 2 + rimLocation2 / 2);
 }
 
-// Returns the ultrasonic distance reading
+// Reset the system to idle ready
+void resetSystem() {
+  analogWrite(pumpPin, 0);
+  hasFinishedDispensing = false;
+  isScanComplete = false;
+  isNozzleCentered = false;
+  hasReturnedHome = false;
+  resetDriver();
+}
+
+// Returns the time of flight reading as a height
+int getTimeOfFlightReading() {
+  int height = TIME_OF_FLIGHT_MAX_DISTANCE - sensor.getDistance();
+  //assert(height >= 0);
+  return height;
+}
+
+// Returns the ultrasonic distance reading as a distance
 int getUltrasonicReading() {
   digitalWrite(triggerPin, LOW); 
   delayMicroseconds(TRIGGER_SWITCH_WAITTIME); // Waiting to update to LOW
