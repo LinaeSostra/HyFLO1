@@ -47,6 +47,9 @@ int stepCounter = 0;
 
 bool hasReturnedHome = false;
 
+// Pump
+#define pumpPin 11
+
 // Other Global Variables
 
 // Buad Rate = Data Rate in Bits per Second
@@ -71,6 +74,7 @@ bool hasPassedFirstRim = false;
 
 bool isNozzleCentered = false;
 bool isScanComplete = false;
+bool hasFinishedDispensing = false;
 
 void setup() {
   Serial.begin(BAUD_RATE);
@@ -96,6 +100,9 @@ void setup() {
   // Initalize Tactile Position Switches
   pinMode(homePin, INPUT_PULLUP);
   pinMode(endPin, INPUT_PULLUP);
+
+  // Initialize Pump
+  pinMode(pumpPin, OUTPUT);
 
   // Initializing readings array to 0s. (for running average algorithm) 
   for (int thisReading = 0; thisReading < MAX_SAMPLES; thisReading++) {
@@ -135,7 +142,6 @@ void loop() {
   bool isReadyToCenterNozzle = isContainerThere && isScanComplete && !isNozzleCentered;
   while (isReadyToCenterNozzle) {
     StepReverse();
-    //Serial.print("Goto Step Counter = "); Serial.println(stepCounter);
     int containerLocation = calculateCenterOfContainer();
     //TODO(Rebecca): Add error range of feasible stepCounter to containerLocation
     bool hasReachedCenterLocation = stepCounter == containerLocation;
@@ -145,8 +151,26 @@ void loop() {
       break;
     }
   }
+  
+  bool isReadyToDispenseLiquid = isContainerThere && isScanComplete && isNozzleCentered && !hasFinishedDispensing;
+  while(isReadyToDispenseLiquid) {
+    analogWrite(pumpPin, 255);
+    delay(1000); // BE SUPER CAREFUL WITH THIS!!!
+    // TODO(Rebecca): Add Half Fill Functionality
+    analogWrite(pumpPin, 0);
+    delay(2000);
+    hasFinishedDispensing = true;
+    hasReturnedHome = false;
+    break;
+  }
 
-  //TODO(Rebecca): Add Pump Dispensing Functionality Here.
+  if(!isContainerThere) {
+    analogWrite(pumpPin, 0);
+    hasFinishedDispensing = false;
+    isScanComplete = false;
+    isNozzleCentered = false;
+    hasReturnedHome = false;
+  }
 }
 
 //FUNCTIONS /***********************************************************************
