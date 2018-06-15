@@ -8,7 +8,7 @@
  * This is tested on an UNO, and not the intended 4udino (Leonardo).
  */
 
-#include "lib/SparkFun_VL6180X.h"
+#include "libraries/SparkFun_VL6180X.h"
 
 #define DEBUG // comment this line to disable debug (Serial Prints)
 
