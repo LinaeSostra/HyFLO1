@@ -4,7 +4,7 @@
  * The purpose of this script is to automate the HyFLO 1 to center over an arbitrary cup, and 
  * dispense the user's preference of liquid using Fuzzy Logic.
  */
-#include "src/SparkFun_VL6180X.h"
+#include "lib/SparkFun_VL6180X.h"
 
 #define DEBUG // comment this line to disable debug (Serial Prints)
 

@@ -1,5 +1,14 @@
+/*
+ * Written By: Rebecca Dun
+ * 
+ * The purpose of this script is to test the HyFLO 1 dispensing
+ * of liquid using Fuzzy Logic assuming the nozzle is in centered over 
+ * the cup already.
+ * 
+ * This is tested on an UNO, and not the intended 4udino (Leonardo).
+ */
 
-#include "src/SparkFun_VL6180X.h"
+#include "lib/SparkFun_VL6180X.h"
 
 #define DEBUG // comment this line to disable debug (Serial Prints)
 
@@ -66,7 +75,7 @@ void loop() {
   // Check if there's a container present
   bool isContainerThere = checkForContainer();
 
-  bool isReadyToDispenseLiquid = isContainerThere && isScanComplete && isNozzleCentered && !hasFinishedDispensing;
+  /*bool isReadyToDispenseLiquid = isContainerThere && isScanComplete && isNozzleCentered && !hasFinishedDispensing;
   while(isReadyToDispenseLiquid) {
     //analogWrite(pumpPin, 255);
     delay(1000); // BE SUPER CAREFUL WITH THIS!!!
@@ -75,7 +84,7 @@ void loop() {
     delay(2000);
     hasFinishedDispensing = true;
     break;
-  }
+  }*/
 }
 
 // Returns the time of flight reading as a height
