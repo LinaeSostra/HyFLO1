@@ -21,22 +21,20 @@ VL6180x sensor(TIME_OF_FLIGHT_ADDRESS);
 
 // Ultrasonic Sensor
 /*
- * The ultrasonic sensor requires 2 pins (http://wiki.jmoon.co/hcsr04/):
+ * The ultrasonic sensor requires 2 pins (http://playground.arduino.cc/Code/NewPing):
  * Trigger Pin is used to send out an ultrasonic high level pulse for at least 10 microseconds
  * Echo Pin automatically detects the returning pulse, measured in microseconds
+ * 
+ * By default, the max distance the ultrasonic sensor reads 500 cm.
  */
 #define triggerPin 10
 #define echoPin 9
-#define MAX_DISTANCE 200 // cm
 
-NewPing ultrasonicSensor(triggerPin, echoPin, MAX_DISTANCE);
+NewPing ultrasonicSensor(triggerPin, echoPin);
 
-#define DETECTION_THRESHOLD 10 // cm
-#define MAX_ERROR_PERCENTAGE 0.1 // % (unitless)
-
-#define TRIGGER_SWITCH_WAITTIME 2 // microseconds
-#define TRIGGER_PULSE_WAITTIME 10 // microseconds
-#define CONTAINER_DEBOUNCE_WAITTIME 1000 // milliseconds
+const unsigned int DETECTION_THRESHOLD = 15; // cm
+const unsigned int MAX_CHANGE_IN_DISTANCE = 3; // cm
+const unsigned int CONTAINER_DEBOUNCE_WAITTIME = 1000; // milliseconds
 
 // Pump
 #define pumpPin 11
@@ -62,10 +60,6 @@ void setup() {
   sensor.VL6180xDefautSettings();
 
   delay(1000);
-
-  // Initialize Ultrasonic Sensor
-  //pinMode(triggerPin, OUTPUT);
-  //pinMode(echoPin, INPUT);
 
   // Initialize Pump
   pinMode(pumpPin, OUTPUT);
@@ -106,27 +100,26 @@ unsigned int getUltrasonicReading() {
 bool checkForContainer() {
   bool isContainerThere = false;
   unsigned int ultrasonicDistance = getUltrasonicReading();
-  unsigned int temp = getUltrasonicReading();
+  
 #ifdef DEBUG
   Serial.print("Ultrasonic Distance: "); Serial.println(ultrasonicDistance);
-  Serial.print("Temp Distance: "); Serial.println(temp);
 #endif
   
-  bool isObjectPresent = ultrasonicDistance < DETECTION_THRESHOLD;
+  bool isObjectPresent = ultrasonicDistance <= DETECTION_THRESHOLD;
   if (isObjectPresent) {
     // Debounce distance checking
-    delay(CONTAINER_DEBOUNCE_WAITTIME);
-    int ultrasonicDistance2 = getUltrasonicReading();
-    bool isDistancePositive = ultrasonicDistance > 2;
-    double errorPercentage = isDistancePositive ? (abs(ultrasonicDistance - ultrasonicDistance2) / double(ultrasonicDistance)) : 0; 
+    delay(CONTAINER_DEBOUNCE_WAITTIME); 
+    unsigned int ultrasonicDistance2 = getUltrasonicReading();
+    unsigned int distanceChange = abs(ultrasonicDistance - ultrasonicDistance2);
+
+#ifdef DEBUG
+  Serial.print("Ultrasonic Distance2: "); Serial.println(ultrasonicDistance2);
+#endif
     
     // Checking if distance has stabilized
-    bool hasDistanceStabilized = errorPercentage < MAX_ERROR_PERCENTAGE;
+    bool hasDistanceStabilized = distanceChange < MAX_CHANGE_IN_DISTANCE;
     if (hasDistanceStabilized) {
-      isContainerThere = true;
-#ifdef DEBUG
-  Serial.println("Container Has Stabilized");
-#endif  
+      isContainerThere = true; 
     }
   }
   return isContainerThere;
