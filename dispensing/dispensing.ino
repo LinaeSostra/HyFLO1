@@ -8,7 +8,8 @@
  * This is tested on an UNO, and not the intended 4udino (Leonardo).
  */
 
-#include "libraries/SparkFun_VL6180X.h"
+#include "src/SparkFun_VL6180X.h"
+#include "src/NewPing.h"
 
 #define DEBUG // comment this line to disable debug (Serial Prints)
 
@@ -26,9 +27,11 @@ VL6180x sensor(TIME_OF_FLIGHT_ADDRESS);
  */
 #define triggerPin 10
 #define echoPin 9
+#define MAX_DISTANCE 200 // cm
 
-#define SPEED_OF_SOUND 0.343 // mm per microsecond
-#define DETECTION_THRESHOLD 100 // mm
+NewPing ultrasonicSensor(triggerPin, echoPin, MAX_DISTANCE);
+
+#define DETECTION_THRESHOLD 10 // cm
 #define MAX_ERROR_PERCENTAGE 0.1 // % (unitless)
 
 #define TRIGGER_SWITCH_WAITTIME 2 // microseconds
@@ -61,8 +64,8 @@ void setup() {
   delay(1000);
 
   // Initialize Ultrasonic Sensor
-  pinMode(triggerPin, OUTPUT);
-  pinMode(echoPin, INPUT);
+  //pinMode(triggerPin, OUTPUT);
+  //pinMode(echoPin, INPUT);
 
   // Initialize Pump
   pinMode(pumpPin, OUTPUT);
@@ -94,32 +97,16 @@ int getTimeOfFlightReading() {
   return height;
 }
 
-// Returns the ultrasonic distance reading as a distance
-int getUltrasonicReading() {
-  digitalWrite(triggerPin, LOW); 
-  delayMicroseconds(TRIGGER_SWITCH_WAITTIME); // Waiting to update to LOW
-  digitalWrite(triggerPin, HIGH);
-  delayMicroseconds(TRIGGER_PULSE_WAITTIME); // Waiting for return signal
-  digitalWrite(triggerPin, LOW);
-
-  // Converting ultrasonic reading to distance
-  //
-  // Note: To convert the ultrasonic measurement from time (microseconds) to distance (mm),
-  // the time for the wave to return needs to be halved as it presents both the time to hit
-  // the object and return back to the sensor. Then this time needs to multipled by 
-  // the speed of sound. All of this is calculated as a float, and then casted into an int
-  // to prevent integer overflow/negative distance readings.
-  //
-  // distance = ((Time for wave to return / 2) * Speed of Sound)
-  int distance = (int) (pulseIn(echoPin, HIGH) / 2 * SPEED_OF_SOUND);
-  return distance;
+// Returns the ultrasonic sensor distance reading in cm
+unsigned int getUltrasonicReading() {
+  return ultrasonicSensor.ping_cm();
 }
 
 // Checks whether an object has been placed in the vicinity or not
 bool checkForContainer() {
   bool isContainerThere = false;
-  int ultrasonicDistance = getUltrasonicReading();
-  int temp = getUltrasonicReading();
+  unsigned int ultrasonicDistance = getUltrasonicReading();
+  unsigned int temp = getUltrasonicReading();
 #ifdef DEBUG
   Serial.print("Ultrasonic Distance: "); Serial.println(ultrasonicDistance);
   Serial.print("Temp Distance: "); Serial.println(temp);
@@ -137,6 +124,9 @@ bool checkForContainer() {
     bool hasDistanceStabilized = errorPercentage < MAX_ERROR_PERCENTAGE;
     if (hasDistanceStabilized) {
       isContainerThere = true;
+#ifdef DEBUG
+  Serial.println("Container Has Stabilized");
+#endif  
     }
   }
   return isContainerThere;
