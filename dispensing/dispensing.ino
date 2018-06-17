@@ -13,37 +13,26 @@
 
 #define DEBUG // comment this line to disable debug (Serial Prints)
 
+// Buad Rate = Data Rate in Bits per Second
+// Recommended Rate: 300, 600, 1200, 2400, 4800, 9600, 14400, 
+// 19200, 28800, 38400, 57600, or 115200
+#define BAUD_RATE 9600 
+
 // Time of Flight Sensor
 #define TIME_OF_FLIGHT_ADDRESS 0x29
 #define TIME_OF_FLIGHT_MAX_DISTANCE 210 // mm
 
 VL6180x sensor(TIME_OF_FLIGHT_ADDRESS);
 
+/* Pins */
 // Ultrasonic Sensor
-/*
- * The ultrasonic sensor requires 2 pins (http://playground.arduino.cc/Code/NewPing):
- * Trigger Pin is used to send out an ultrasonic high level pulse for at least 10 microseconds
- * Echo Pin automatically detects the returning pulse, measured in microseconds
- * 
- * By default, the max distance the ultrasonic sensor reads 500 cm.
- */
-#define triggerPin 10
-#define echoPin 9
-
-NewPing ultrasonicSensor(triggerPin, echoPin);
-
-const unsigned int DETECTION_THRESHOLD = 15; // cm
-const unsigned int MAX_CHANGE_IN_DISTANCE = 3; // cm
-const unsigned int CONTAINER_DEBOUNCE_WAITTIME = 1000; // milliseconds
+const int triggerPin = 10;
+const int echoPin = 9;
 
 // Pump
-#define pumpPin 11
+const int pumpPin = 11;
 
-// Buad Rate = Data Rate in Bits per Second
-// Recommended Rate: 300, 600, 1200, 2400, 4800, 9600, 14400, 
-// 19200, 28800, 38400, 57600, or 115200
-#define BAUD_RATE 9600 
-
+/* Global Variables */
 int rimHeight, rimHeight2 = 0; //TODO(Rebecca): Change this to dummy value.
 
 bool isNozzleCentered = true;
