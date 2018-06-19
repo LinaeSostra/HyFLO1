@@ -10,6 +10,7 @@
 
 #include "src/SparkFun_VL6180X.h"
 #include "src/NewPing.h"
+#include "Pins.h"
 
 #define DEBUG // comment this line to disable debug (Serial Prints)
 
@@ -23,14 +24,6 @@
 #define TIME_OF_FLIGHT_MAX_DISTANCE 210 // mm
 
 VL6180x sensor(TIME_OF_FLIGHT_ADDRESS);
-
-/* Pins */
-// Ultrasonic Sensor
-const int triggerPin = 10;
-const int echoPin = 9;
-
-// Pump
-const int pumpPin = 11;
 
 /* Global Variables */
 int rimHeight, rimHeight2 = 0; //TODO(Rebecca): Change this to dummy value.

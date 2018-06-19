@@ -7,6 +7,7 @@
  * 
  * By default, the max distance the ultrasonic sensor reads 500 cm.
  */
+#include "Pins.h"
 
 // Initialize ultrasonic sensor
 NewPing ultrasonicSensor(triggerPin, echoPin);
