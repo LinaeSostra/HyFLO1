@@ -1,7 +1,6 @@
 /*
  * Time of Flight
  */
-#include "Pins.h"
 
 // Initialize Time of Flight
 Adafruit_VL53L0X timeOfFlight = Adafruit_VL53L0X();

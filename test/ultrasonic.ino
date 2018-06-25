@@ -7,8 +7,6 @@
  * 
  * By default, the max distance the ultrasonic sensor reads 500 cm.
  */
-#include "Pins.h"
-#include "test_Libraries/NewPing/NewPing.h"
 
 // Initialize ultrasonic sensor
 NewPing ultrasonicSensor(triggerPin, echoPin);
@@ -25,6 +23,12 @@ const unsigned int CENTI_TO_MILLIMETER_CONVERSION = 10;
 ////////////////////////////////
 /* Functions */
 ////////////////////////////////
+
+// Initialize Ultrasonic Sensor Pins
+void ultrasonicSetup() {
+  pinMode(triggerPin, OUTPUT);
+  pinMode(echoPin, INPUT);
+}
 
 // Returns the ultrasonic sensor distance reading in mm
 unsigned int getUltrasonicReading() {

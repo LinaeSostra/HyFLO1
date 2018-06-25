@@ -6,7 +6,6 @@
  * -------------------------------------------------------------
  *  To-Do List
  *  ★ Add Tactile Switch Testing
- *  ★ Add Easy Motor Testing
  *  ★ Add Dispensing Testing
  * -------------------------------------------------------------
  */
@@ -29,6 +28,7 @@ void setup() {
     delay(1);
   }
 
+  ultrasonicSetup();
   timeOfFlightSetup();
 }
 
@@ -42,6 +42,9 @@ void loop() {
   // Anything out of this range is likely hitting out of range values
   Serial.println("\nTime of Flight Testing");
   testTimeOfFlight();
+
+  Serial.println("\nMotor Testing");
+  testMotor();
 
   delay(100);
 }
