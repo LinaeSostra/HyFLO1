@@ -3,13 +3,17 @@
  * works as intended.
  * 
  * Written By: Rebecca Dun
+ * -------------------------------------------------------------
+ *  To-Do List
+ *  ★ Add Tactile Switch Testing
+ *  ★ Add Easy Motor Testing
+ *  ★ Add Dispensing Testing
+ * -------------------------------------------------------------
  */
 
 #include "test_Libraries/VL53L0X/Adafruit_VL53L0X.h"
 #include "test_Libraries/NewPing/NewPing.h"
 #include "Pins.h"
-
-Adafruit_VL53L0X timeOfFlight = Adafruit_VL53L0X();
 
 #define DEBUG // comment this line to disable debug (Serial Prints)
 
@@ -25,15 +29,7 @@ void setup() {
     delay(1);
   }
 
-#ifdef DEBUG
-  Serial.println("Adafruit VL53L0X test");
-  if(!timeOfFlight.begin()) {
-    Serial.println(F("Failed to boot VL53L0X"));
-    while(1);
-  }
-
-  Serial.println("Adafruit VL53L0X Booted Up Successfully");
-#endif
+  timeOfFlightSetup();
 }
 
 void loop() {
