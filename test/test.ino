@@ -8,8 +8,8 @@
  * -------------------------------------------------------------
  */
 
-#include "test_Libraries/VL53L0X/Adafruit_VL53L0X.h"
-#include "test_Libraries/NewPing/NewPing.h"
+#include "src/VL53L0X/Adafruit_VL53L0X.h"
+#include "src/NewPing/NewPing.h"
 #include "Pins.h"
 
 #define DEBUG // comment this line to disable debug (Serial Prints)
@@ -39,7 +39,6 @@ void setup() {
 void loop() {
   testSensorsAndActuators(); // To test each sensor and actuator
   //startSystem(); // To start dispensing sequence
-  
 }
 
 void testSensorsAndActuators() {

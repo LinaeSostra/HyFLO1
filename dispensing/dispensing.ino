@@ -8,8 +8,8 @@
  * This is tested on an UNO, and not the intended 4udino (Leonardo).
  */
 
-#include "src/SparkFun_VL6180X.h"
-#include "src/NewPing.h"
+#include "src/VL53L0X/Adafruit_VL53L0X.h"
+#include "src/NewPing/NewPing.h"
 #include "Pins.h"
 
 #define DEBUG // comment this line to disable debug (Serial Prints)
@@ -18,12 +18,6 @@
 // Recommended Rate: 300, 600, 1200, 2400, 4800, 9600, 14400, 
 // 19200, 28800, 38400, 57600, or 115200
 #define BAUD_RATE 9600 
-
-// Time of Flight Sensor
-#define TIME_OF_FLIGHT_ADDRESS 0x29
-#define TIME_OF_FLIGHT_MAX_DISTANCE 210 // mm
-
-VL6180x sensor(TIME_OF_FLIGHT_ADDRESS);
 
 /* Global Variables */
 int rimHeight, rimHeight2 = 0; //TODO(Rebecca): Change this to dummy value.
@@ -35,11 +29,7 @@ bool hasFinishedDispensing = false;
 void setup() {
   Serial.begin(BAUD_RATE);
 
-  // Initialize Time of Flight Sensor
-  if(sensor.VL6180xInit() != 0) {
-    Serial.println("FAILED TO INITIALIZE");
-  }
-  sensor.VL6180xDefautSettings();
+  timeOfFlightSetup();
 
   delay(1000);
 
@@ -63,11 +53,4 @@ void loop() {
     hasFinishedDispensing = true;
     break;
   }*/
-}
-
-// Returns the time of flight reading as a height
-int getTimeOfFlightReading() {
-  int height = TIME_OF_FLIGHT_MAX_DISTANCE - sensor.getDistance();
-  //assert(height >= 0);
-  return height;
 }
