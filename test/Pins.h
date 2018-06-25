@@ -16,9 +16,13 @@ const int directionPin = 5; // Set LOW to step 'forward', Set HIGH to step 'back
 const int enablePin  = 6; // Controls whether GND is enabled
 
 // Tactile Position Switches
-// These tactile switches are HIGH when not pressed, and LOW when pressed
-const int homePin = 7;
-const int endPin = 8;
+/* These tactile switches are HIGH when not pressed, and LOW when pressed
+ *  
+ * NOTE: These pins are 0 and 1 respectively to allow interrupts to work.
+ * https://www.arduino.cc/reference/en/language/functions/external-interrupts/attachinterrupt/
+*/
+const int homePin = 0;
+const int endPin = 1;
 
 // Pump
 const int pumpPin = 11;

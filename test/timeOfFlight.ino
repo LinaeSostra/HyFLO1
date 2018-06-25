@@ -5,14 +5,9 @@
 // Initialize Time of Flight
 Adafruit_VL53L0X timeOfFlight = Adafruit_VL53L0X();
 
-////////////////////////////////
-/* Global Constants */
-////////////////////////////////
+// Global Constants
 const int TIME_OF_FLIGHT_MAX_DISTANCE = 210; // mm
 
-////////////////////////////////
-/* Functions */
-////////////////////////////////
 // Checks the time of flight boots as intended
 void timeOfFlightSetup() {
   Serial.println("Adafruit VL53L0X test");

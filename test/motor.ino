@@ -2,16 +2,10 @@
  * Stepper Motor Easy Driver 
  */
 
-////////////////////////////////
-/* Global Constants */
-////////////////////////////////
+// Global Constants
 const int STEPPER_SWITCH_WAITTIME = 70; // microseconds
 
 int stepCounter = 0; 
-
-////////////////////////////////
-/* Functions */
-////////////////////////////////
 
 // Initialize Stepper Motor / Easy Driver Pins & set driver to default
 void motorSetup() {
@@ -19,6 +13,10 @@ void motorSetup() {
   pinMode(directionPin, OUTPUT);
   pinMode(enablePin, OUTPUT);
   resetDriver();
+}
+
+void resetStepperCount() {
+  stepCounter = 0;
 }
 
 /* Reset Easy Driver pins to default state by:
@@ -70,6 +68,16 @@ void stepReverse() {
   stepCounter--;
 }
 
+// Sends the nozzle to the home position
+void returnHome() {
+  while(!hasVisitedHome()) {
+    stepReverse();
+    if(hasVisitedHome()) {
+      break;
+    } 
+  }
+}
+
 // Testing the stepper motor by going forward 10 times, then backwards 10 times
 void testMotor() {
   int count = 10;
@@ -84,4 +92,3 @@ void testMotor() {
     stepReverse();
   }
 }
-

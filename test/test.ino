@@ -4,9 +4,7 @@
  * 
  * Written By: Rebecca Dun
  * -------------------------------------------------------------
- *  To-Do List
- *  ★ Add Tactile Switch Testing
- *  ★ Add Dispensing Testing
+ *
  * -------------------------------------------------------------
  */
 
@@ -28,11 +26,23 @@ void setup() {
     delay(1);
   }
 
+  // Sensor Setup
+  switchSetup();
   ultrasonicSetup();
   timeOfFlightSetup();
+
+  // Actuator Setup
+  motorSetup();
+  pumpSetup();
 }
 
 void loop() {
+  testSensorsAndActuators(); // To test each sensor and actuator
+  //startSystem(); // To start dispensing sequence
+  
+}
+
+void testSensorsAndActuators() {
   // This is working as intended if the ultrasonic values fluctate between ~ 30 - 5000 mm
   // Anything out of this range is likely hitting out of range values
   Serial.println("\nUltrasonic Testing");
@@ -46,5 +56,12 @@ void loop() {
   Serial.println("\nMotor Testing");
   testMotor();
 
+  Serial.println("\nPump Testing");
+  testPump();
+
   delay(100);
+}
+
+void startSystem() {
+  //TODO
 }

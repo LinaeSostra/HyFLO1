@@ -11,18 +11,12 @@
 // Initialize ultrasonic sensor
 NewPing ultrasonicSensor(triggerPin, echoPin);
 
-////////////////////////////////
-/* Global Constants */
-////////////////////////////////
+// Global Constants
 const unsigned int DETECTION_THRESHOLD = 150; // mm
 const unsigned int MAX_CHANGE_IN_DISTANCE = 30; // mm
 const unsigned int CONTAINER_DEBOUNCE_WAITTIME = 1000; // milliseconds
 
 const unsigned int CENTI_TO_MILLIMETER_CONVERSION = 10;
-
-////////////////////////////////
-/* Functions */
-////////////////////////////////
 
 // Initialize Ultrasonic Sensor Pins
 void ultrasonicSetup() {
