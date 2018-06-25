@@ -5,15 +5,21 @@
  * Written By: Rebecca Dun
  */
 
-#include "libraries/VL53L0X/Adafruit_VL53L0X.h"
+#include "test_Libraries/VL53L0X/Adafruit_VL53L0X.h"
+#include "test_Libraries/NewPing/NewPing.h"
 #include "Pins.h"
 
 Adafruit_VL53L0X timeOfFlight = Adafruit_VL53L0X();
 
 #define DEBUG // comment this line to disable debug (Serial Prints)
 
+// Buad Rate = Data Rate in Bits per Second
+// Recommended Rate: 300, 600, 1200, 2400, 4800, 9600, 14400, 
+// 19200, 28800, 38400, 57600, or 115200
+#define BAUD_RATE 9600 
+
 void setup() {
-  Serial.begin(115200);
+  Serial.begin(BAUD_RATE);
 
   while(!Serial) {
     delay(1);
@@ -31,7 +37,14 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  // This is working as intended if the ultrasonic values fluctate between ~ 30 - 5000 mm
+  // Anything out of this range is likely hitting out of range values
+  Serial.println("\nUltrasonic Testing");
+  testUltrasonic();
+
+  // This is working as intended if the time of flight values fluctate between ~ 30 - 1300 mm
+  // Anything out of this range is likely hitting out of range values
+  Serial.println("\nTime of Flight Testing");
   testTimeOfFlight();
 
   delay(100);
