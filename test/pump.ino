@@ -30,7 +30,7 @@ bool wasPumpOn = false;
     #ifdef DEBUG
       Serial.println("\nPump is On!");
     #endif
-    analogWrite(pumpPin, 128);
+    analogWrite(pumpPin, 127);
   } else {
     pumpOff();
   }
@@ -51,7 +51,7 @@ bool wasPumpOn = false;
 // Rebecca testing the PWM functionality works w/ intended pump.
  void testPump2() {
   pumpHalfOn();
-  delay(5000);
+  delay(500);
   pumpOff();
   wasPumpOn = true;
  }

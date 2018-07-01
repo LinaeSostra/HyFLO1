@@ -7,8 +7,8 @@ const int sdaPin = 2;
 const int sclPin = 3;
 
 // Ultrasonic Sensor
-const int triggerPin = 10;
-const int echoPin = 9;
+const int triggerPin = 8;
+const int echoPin = 7;
 
 // Stepper Motor Easy Driver
 const int stepperPin = 4; // Rising edge (LOW -> HIGH) triggers a step
@@ -25,6 +25,6 @@ const int homePin = 0;
 const int endPin = 1;
 
 // Pump
-const int pumpPin = 8;
+const int pumpPin = 9;
 
 #endif
