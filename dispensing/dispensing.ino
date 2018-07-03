@@ -20,7 +20,7 @@
 #define BAUD_RATE 9600 
 
 /* Global Variables */
-int rimHeight, rimHeight2 = 0; //TODO(Rebecca): Change this to dummy value.
+const int mockRimHeight = 120; //TODO(Rebecca): Change this to dummy value.
 
 bool isNozzleCentered = true;
 bool isScanComplete = true;
@@ -29,12 +29,16 @@ bool hasFinishedDispensing = false;
 void setup() {
   Serial.begin(BAUD_RATE);
 
+  while(!Serial) {
+    delay(1);
+  }
+
+  // Sensor Setup
+  ultrasonicSetup();
   timeOfFlightSetup();
 
-  delay(1000);
-
-  // Initialize Pump
-  pinMode(pumpPin, OUTPUT);
+  // Actuator Setup
+  pumpSetup();
 }
 
 void loop() {
@@ -43,14 +47,9 @@ void loop() {
   // Check if there's a container present
   bool isContainerThere = checkForContainer();
 
-  /*bool isReadyToDispenseLiquid = isContainerThere && isScanComplete && isNozzleCentered && !hasFinishedDispensing;
-  while(isReadyToDispenseLiquid) {
-    //analogWrite(pumpPin, 255);
-    delay(1000); // BE SUPER CAREFUL WITH THIS!!!
-    // TODO(Rebecca): Add Half Fill Functionality
-    analogWrite(pumpPin, 0);
-    delay(2000);
-    hasFinishedDispensing = true;
-    break;
-  }*/
+  if(isContainerThere && !getPumpFlag()) {
+    dispenseLiquid();
+  } else if(!isContainerThere) {
+    resetPumpFlag();
+  }
 }
