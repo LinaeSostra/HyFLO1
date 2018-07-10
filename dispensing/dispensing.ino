@@ -39,6 +39,9 @@ void setup() {
 
   // Actuator Setup
   pumpSetup();
+
+  // Fuzzy Logic Setup
+  fuzzyLogicSetup();
 }
 
 void loop() {
