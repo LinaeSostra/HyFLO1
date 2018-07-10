@@ -24,6 +24,10 @@ const FuzzySet* small = new FuzzySet(30, 65, 65, 100);
 const FuzzySet* medium = new FuzzySet(70, 120, 120, 170);
 const FuzzySet* large = new FuzzySet(150, 225, 225, 300);
 
+// User Request Progress ( Error: Target - Actual ) [ mm ]
+const FuzzySet* complete = new FuzzySet(-300, -300, 0, 20); // Half Trap
+const FuzzySet* almostComplete = new FuzzySet(10, 20, 20, 30); // Triangle
+
 // Cup Opening ( Diameter between two rims ) [ steps ]
 // TODO(Rebecca): Determine when have system what these values need to be
 // Note: Mockup Values for now.... unsure if needed
@@ -52,8 +56,13 @@ void fuzzyLogicSetup() {
   cupHeight->addFuzzySet(medium);
   cupHeight->addFuzzySet(large);
 
+  // Adding User Request Progress as Input
+  FuzzyInput* error = new FuzzyInput(3);
+  error->addFuzzySet(complete);
+  error->addFuzzySet(almostComplete);
+
   // Adding Cup Opening as Input
-  //FuzzyInput* cupOpening = new FuzzyInput(3);
+  //FuzzyInput* cupOpening = new FuzzyInput(4);
   //cupOpening->addFuzzySet(tight);
   //cupOpening->addFuzzySet(regular);
   //cupOpening->addFuzzySet(wide);
@@ -67,34 +76,37 @@ void fuzzyLogicSetup() {
   // Attach Inputs/outputs to fuzzy object
   fuzzy->addFuzzyInput(fillPercentage);
   fuzzy->addFuzzyInput(cupHeight);
+  fuzzy->addFuzzyInput(error);
   //fuzzy->addFuzzyInput(cupOpening);
   fuzzy->addFuzzyOutput(dispenseSpeed);
 
    /* Building Fuzzy Rules */
-  // Rule # 1: If cup is filled, stop pouring
+  // Rule # 1: If cup is filled or user request complete (error: complete), stop pouring
   
-  FuzzyRuleAntecedent* ifFilled = new FuzzyRuleAntecedent();
-  ifFilled->joinSingle(filled);
+  FuzzyRuleAntecedent* ifFilledOrUserRequestComplete = new FuzzyRuleAntecedent();
+  ifFilledOrUserRequestComplete->joinWithOR(filled, complete);
 
   FuzzyRuleConsequent* thenStopFilling = new FuzzyRuleConsequent();
   thenStopFilling->addOutput(stopped);
 
-  FuzzyRule* fuzzyRule1 = new FuzzyRule(1, ifFilled, thenStopFilling);
+  FuzzyRule* fuzzyRule1 = new FuzzyRule(1, ifFilledOrUserRequestComplete, thenStopFilling);
   fuzzy->addFuzzyRule(fuzzyRule1);
 
-  // Rule # 2: If cup small AND not filled OR nearly filled, pour slowly
+  // Rule # 2: If cup small AND not filled OR nearly filled OR user request almost complete, pour slowly
   
   FuzzyRuleAntecedent* ifCupSmallAndNotFilled = new FuzzyRuleAntecedent();
   ifCupSmallAndNotFilled->joinWithAND(small, notFilled);
-  FuzzyRuleAntecedent* ifNearlyFilled = new FuzzyRuleAntecedent();
-  ifNearlyFilled->joinSingle(nearlyFilled);
-  FuzzyRuleAntecedent* ifCupSmallAndNotFilledOrNearlyFilled = new FuzzyRuleAntecedent();
-  ifCupSmallAndNotFilledOrNearlyFilled->joinWithOR(ifCupSmallAndNotFilled, ifNearlyFilled);
+  FuzzyRuleAntecedent* ifNearlyFilledOrUserRequestAlmostComplete = new FuzzyRuleAntecedent();
+  ifNearlyFilledOrUserRequestAlmostComplete->joinWithOR(nearlyFilled, almostComplete);
+  FuzzyRuleAntecedent* ifCupSmallAndNotFilledOrNearlyFilledOrUserRequestAlmostComplete = new FuzzyRuleAntecedent();
+  ifCupSmallAndNotFilledOrNearlyFilledOrUserRequestAlmostComplete->
+    joinWithOR(ifCupSmallAndNotFilled, ifNearlyFilledOrUserRequestAlmostComplete);
 
   FuzzyRuleConsequent* thenFillSlowly = new FuzzyRuleConsequent();
   thenFillSlowly->addOutput(slow);
 
-  FuzzyRule* fuzzyRule2 = new FuzzyRule(2, ifCupSmallAndNotFilledOrNearlyFilled, thenFillSlowly);
+  FuzzyRule* fuzzyRule2 = new FuzzyRule(2, 
+    ifCupSmallAndNotFilledOrNearlyFilledOrUserRequestAlmostComplete, thenFillSlowly);
   fuzzy->addFuzzyRule(fuzzyRule2);
 
   // Rule #3: If cup medium or large and not filled or somewhatFilled or mostlyFilled, pour fast

@@ -65,8 +65,8 @@ bool wasPumpOn = false;
   wasPumpOn = true;
  }
 
- // Calculate how much to fill the cup 
-int calculateDesireFill(float percentage, int rimAvgHeight) {
+ // Calculate how much to fill the cup by height [mm]
+int calculateTargetHeightFill(float percentage, int rimAvgHeight) {
   //Edge Case Flooring user request to fill
   if(percentage > MAX_FILL) {
     percentage = MAX_FILL;
@@ -76,11 +76,36 @@ int calculateDesireFill(float percentage, int rimAvgHeight) {
   return int(percentage * float(rimAvgHeight));
 }
 
+// Returns the error difference to target height
+int getHeightDifference(int currentHeight, int targetHeight) {
+  return (targetHeight - currentHeight);
+}
+
+// Returns the height percentage filled
+int getFillPercentage(int currentHeight, int cupHeight) {
+  return int(float(currentHeight)/float(cupHeight) * 100);
+}
+
 // Dispenses liquid into said cup
 void dispenseLiquid() {
-  int desiredHeightFill = calculateDesireFill(userFill, mockRimHeight);
+  int targetHeight = calculateTargetHeightFill(userFill, mockRimHeight);
   int currentHeight = getTimeOfFlightReading();
 
+  fuzzy->setInput(1, getFillPercentage(currentHeight, mockRimHeight));
+  fuzzy->setInput(2, mockRimHeight);
+  fuzzy->setInput(3, getHeightDifference(currentHeight, targetHeight));
+
+  fuzzy->fuzzify();
+
+  uint8_t tempSpeed = uint8_t(fuzzy->defuzzify(1));
+  if(wasPumpOn == false) {
+    analogWrite(pumpPin, tempSpeed);
+  }
+  if (tempSpeed == 0) {
+    wasPumpOn = true;
+  }
+  
+  /*
   // Note: I can't extract this code, or it would be in an inf loop and overflow water everywhere.
   while(currentHeight < desiredHeightFill) {
     pumpOn();
@@ -89,4 +114,5 @@ void dispenseLiquid() {
   } 
   pumpOff();
   wasPumpOn = true;
+  */
  }
