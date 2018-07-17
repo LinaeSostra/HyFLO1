@@ -55,8 +55,8 @@ void testSensorsAndActuators() {
   Serial.println("\nMotor Testing");
   testMotor();
 
-  Serial.println("\nPump Testing");
-  testPump();
+  //Serial.println("\nPump Testing");
+  //testPump();
 
   delay(100);
 }
