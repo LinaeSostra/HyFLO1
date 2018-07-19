@@ -25,6 +25,6 @@ const int homePin = 0;
 const int endPin = 1;
 
 // Pump
-const int pumpPin = 9;
+const int pumpPin = 11;
 
 #endif

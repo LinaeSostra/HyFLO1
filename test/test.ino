@@ -53,13 +53,14 @@ void testSensorsAndActuators() {
   testTimeOfFlight();
 
   Serial.println("\nMotor Testing");
+  //returnHome();
   testMotor();
 
   //Serial.println("\nPump Testing");
   //testPump();
 
   delay(100);
-}
+} 
 
 void startSystem() {
   //TODO

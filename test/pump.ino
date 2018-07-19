@@ -8,13 +8,15 @@ bool wasPumpOn = false;
 //Initialize Pump
  void pumpSetup() {
   pinMode(pumpPin, OUTPUT);
+  pumpOff();
  }
 
+/*
  void resetPumpFlag() { 
   wasPumpOn = false;
  }
 
- void pumpOn() {
+void pumpOn() {
   if(!wasPumpOn) {
     #ifdef DEBUG
       Serial.println("\nPump is On!");
@@ -25,7 +27,7 @@ bool wasPumpOn = false;
   }
  }
 
- void pumpHalfOn() {
+void pumpHalfOn() {
   if(!wasPumpOn) {
     #ifdef DEBUG
       Serial.println("\nPump is On!");
@@ -34,14 +36,14 @@ bool wasPumpOn = false;
   } else {
     pumpOff();
   }
- }
+}*/
 
  void pumpOff() {
   analogWrite(pumpPin, 0);
  }
 
 // Turns the pump on for a second, then off.
- void testPump() {
+/*void testPump() {
   pumpOn();
   delay(500);
   pumpOff();
@@ -54,4 +56,4 @@ bool wasPumpOn = false;
   delay(500);
   pumpOff();
   wasPumpOn = true;
- }
+ }*/

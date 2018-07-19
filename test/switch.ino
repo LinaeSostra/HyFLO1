@@ -11,8 +11,8 @@ void switchSetup() {
   pinMode(endPin, INPUT_PULLUP);
 
   // Whenever a switch is pressed, interrupt to update switch flag
-  attachInterrupt(digitalPinToInterrupt(homePin), homePressed, FALLING);
-  attachInterrupt(digitalPinToInterrupt(endPin), endPressed, FALLING);
+  attachInterrupt(digitalPinToInterrupt(homePin), homePressed, RISING);
+  attachInterrupt(digitalPinToInterrupt(endPin), endPressed, RISING);
   Serial.println("Finished Switch Setup");
 }
 
@@ -29,7 +29,7 @@ void endPressed() {
   hasVisitedEndPosition = true;
   
   //TODO(Rebecca): This may be incorrect logically.
-  hasVisitedHomePosition = false;
+  //hasVisitedHomePosition = false;
   //returnHome();
 }
 
