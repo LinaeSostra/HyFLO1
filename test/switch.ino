@@ -13,6 +13,7 @@ void switchSetup() {
   // Whenever a switch is pressed, interrupt to update switch flag
   attachInterrupt(digitalPinToInterrupt(homePin), homePressed, RISING);
   attachInterrupt(digitalPinToInterrupt(endPin), endPressed, RISING);
+  resetSwitches();
   Serial.println("Finished Switch Setup");
 }
 
@@ -34,7 +35,7 @@ void endPressed() {
 }
 
 // Set switch flags to false
-void resetSwitches() {
+ void resetSwitches() {
   hasVisitedHomePosition = false;
   hasVisitedEndPosition = false;
 }

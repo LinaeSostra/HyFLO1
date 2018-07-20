@@ -11,7 +11,7 @@ bool wasPumpOn = false;
   pumpOff();
  }
 
-/*
+
  void resetPumpFlag() { 
   wasPumpOn = false;
  }
@@ -36,16 +36,16 @@ void pumpHalfOn() {
   } else {
     pumpOff();
   }
-}*/
+}
 
  void pumpOff() {
   analogWrite(pumpPin, 0);
  }
 
 // Turns the pump on for a second, then off.
-/*void testPump() {
+void testPump() {
   pumpOn();
-  delay(500);
+  delay(5000);
   pumpOff();
   wasPumpOn = true;
  }
@@ -56,4 +56,4 @@ void pumpHalfOn() {
   delay(500);
   pumpOff();
   wasPumpOn = true;
- }*/
+ }

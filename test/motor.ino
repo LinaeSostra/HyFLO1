@@ -32,7 +32,7 @@ void resetEasyDriver() {
   digitalWrite(directionPin, LOW);
   digitalWrite(enablePin, HIGH);
 }
-/*
+
 // Sets the Easy Driver pins to 'forward' direction
 void setDriverForward() {
   digitalWrite(directionPin, LOW);
@@ -73,13 +73,17 @@ void stepReverse() {
 
 // Sends the nozzle to the home position
 void returnHome() {
-  while(!hasVisitedHome()) {
-    stepReverse();
-    if(hasVisitedHome()) {
-      break;
-    } 
+  if(!wasMotorOn) {
+    while(!hasVisitedHome()) {
+      stepReverse();
+      if(hasVisitedHome()) {
+        digitalWrite(enablePin, HIGH);
+        wasMotorOn = true;
+        break;
+      } 
+    }
   }
-}*/
+}
 
 int x;
 int y;

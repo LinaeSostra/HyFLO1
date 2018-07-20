@@ -44,21 +44,21 @@ void loop() {
 void testSensorsAndActuators() {
   // This is working as intended if the ultrasonic values fluctate between ~ 30 - 5000 mm
   // Anything out of this range is likely hitting out of range values
-  Serial.println("\nUltrasonic Testing");
+  /*Serial.println("\nUltrasonic Testing");
   testUltrasonic();
 
   // This is working as intended if the time of flight values fluctate between ~ 30 - 1300 mm
   // Anything out of this range is likely hitting out of range values
   Serial.println("\nTime of Flight Testing");
   testTimeOfFlight();
-
+*/
   Serial.println("\nMotor Testing");
-  //returnHome();
-  testMotor();
-
-  //Serial.println("\nPump Testing");
-  //testPump();
-
+  returnHome();
+  //testMotor();
+/*
+  Serial.println("\nPump Testing");
+  testPump();
+*/
   delay(100);
 } 
 
