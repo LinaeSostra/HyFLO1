@@ -10,7 +10,7 @@
 
 #define DEBUG // comment this line to disable debug (Serial Prints)
 
-#define STEPPER_SWITCH_WAITTIME 80 // microseconds
+//#define STEPPER_SWITCH_WAITTIME 80 // microseconds
 #define MAX_ERROR_PERCENTAGE 0.1 // % (unitless)
 
 int stepCounter = 0; 
@@ -55,10 +55,11 @@ void setup() {
   ultrasonicSetup();
 
   // Initialize Stepper Motor / Easy Driver
-  pinMode(stepperPin, OUTPUT);
+  motorSetup();
+  /*pinMode(stepperPin, OUTPUT);
   pinMode(directionPin, OUTPUT);
   pinMode(enablePin, OUTPUT);
-  resetDriver();
+  resetEasyDriver();*/
  
   // Initalize Tactile Position Switches
   switchSetup();
@@ -100,7 +101,7 @@ void loop() {
       #endif
       isScanComplete = true;
       //Serial.print("Total Steps: "); Serial.println(stepCounter);
-      resetDriver();
+      resetEasyDriver();
       break;
     }
   }
@@ -113,7 +114,7 @@ void loop() {
     bool hasReachedCenterLocation = stepCounter == containerLocation;
     if (hasReachedCenterLocation) {
       isNozzleCentered = true;
-      resetDriver();
+      resetEasyDriver();
       break;
     }
   }
@@ -143,7 +144,8 @@ void loop() {
   - the direction to move "forward" (LOW)
   - Enabling GND (HIGH)
 */
-void resetDriver() {
+/*
+void resetEasyDriver() {
   digitalWrite(stepperPin, LOW);
   digitalWrite(directionPin, LOW);
   digitalWrite(enablePin, HIGH);
@@ -167,7 +169,7 @@ void stepOnce() {
   delayMicroseconds(STEPPER_SWITCH_WAITTIME); //2000 was best
   digitalWrite(stepperPin, LOW);
   delayMicroseconds(STEPPER_SWITCH_WAITTIME); //2000 was best
-}
+}*/
 
 void smoothReading() {
   int height = getTimeOfFlightReading();
@@ -189,14 +191,14 @@ int getRunningTotal() {
   }
   return total;
 }
-
+/*
 void stepForward() {
   setDriverForward();
   for (int i = 0; i < 100 ; i++) {
     stepOnce();
   }
   stepCounter++;
-}
+}*/
 
 void findAllRims() {
   smoothReading();
@@ -281,7 +283,7 @@ void updateRimParameters(bool isFirstRim, int height, int location) {
     rimLocation2 = location;
   }
 }
- 
+/*
 // Reverse default microstep mode function
 void stepReverse() {
   setDriverReverse();
@@ -300,7 +302,7 @@ void returnHome() {
        break;
      } 
    }
-}
+}*/
 
 int calculateCenterOfContainer() {
   if (rimLocation == 0 || rimLocation2 == 0) {
@@ -318,5 +320,5 @@ void resetSystem() {
   isScanComplete = false;
   isNozzleCentered = false;
   hasReturnedHome = false;
-  resetDriver();
+  resetEasyDriver();
 }
