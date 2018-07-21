@@ -3,10 +3,10 @@
  */
 
 // Global Constants
-const int STEPPER_SWITCH_WAITTIME = 80; // microseconds
+const int STEPPER_SWITCH_WAITTIME = 85; // microseconds
 
-//int stepCounter = 0; 
-//bool wasMotorOn = false;
+int stepCounter = 0; 
+bool wasMotorOn = false;
 
 // Initialize Stepper Motor / Easy Driver Pins & set driver to default
 void motorSetup() {
@@ -20,6 +20,10 @@ void motorSetup() {
 
 void resetStepperCount() {
   stepCounter = 0;
+}
+
+int getStepCount() {
+  return stepCounter;
 }
 
 /* Reset Easy Driver pins to default state by:
@@ -76,6 +80,7 @@ void returnHome() {
     while(!hasVisitedHome()) {
       stepReverse();
       if(hasVisitedHome()) {
+        resetStepperCount();
         break;
       } 
     }

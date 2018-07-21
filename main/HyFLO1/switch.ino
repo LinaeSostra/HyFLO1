@@ -21,7 +21,7 @@ void switchSetup() {
 void homePressed() {
   Serial.println("\nHome Tactile Switch Pressed!");
   hasVisitedHomePosition = true;
-  //resetStepperCount();
+  resetStepperCount();
 }
 
 // If End Switch Pressed, set end flag true
@@ -30,7 +30,7 @@ void endPressed() {
   hasVisitedEndPosition = true;
   
   //TODO(Rebecca): This may be incorrect logically.
-  //hasVisitedHomePosition = false;
+  hasVisitedHomePosition = false;
   //returnHome();
 }
 

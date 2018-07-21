@@ -13,9 +13,8 @@
 //#define STEPPER_SWITCH_WAITTIME 80 // microseconds
 #define MAX_ERROR_PERCENTAGE 0.1 // % (unitless)
 
-int stepCounter = 0; 
-
-bool hasReturnedHome = false;
+//int stepCounter = 0; 
+//bool hasReturnedHome = false;
 
 // Other Global Variables
 
@@ -56,16 +55,9 @@ void setup() {
 
   // Initialize Stepper Motor / Easy Driver
   motorSetup();
-  /*pinMode(stepperPin, OUTPUT);
-  pinMode(directionPin, OUTPUT);
-  pinMode(enablePin, OUTPUT);
-  resetEasyDriver();*/
  
   // Initalize Tactile Position Switches
   switchSetup();
-  //pinMode(homePin, INPUT_PULLUP);
-  //pinMode(endPin, INPUT_PULLUP);
-
 
   // Initialize Pump
   pinMode(pumpPin, OUTPUT);
@@ -92,15 +84,14 @@ void loop() {
     stepForward();
     findAllRims();
     // Check if scan is complete
-    bool isAtEndPosition = digitalRead(endPin) == LOW;
     bool areAllRimsLocated = isFirstRimLocated && isSecondRimLocated;
-    if(isAtEndPosition || areAllRimsLocated) {
+    if(hasVisitedEnd() || areAllRimsLocated) {
       #ifdef DEBUG
       Serial.print("Rim 1 (Height, Location): "); Serial.print(rimHeight); Serial.print(", "); Serial.println(rimLocation);
       Serial.print("Rim 2 (Height, Location): "); Serial.print(rimHeight2); Serial.print(", "); Serial.println(rimLocation2);
       #endif
       isScanComplete = true;
-      //Serial.print("Total Steps: "); Serial.println(stepCounter);
+      Serial.print("Total Steps: "); Serial.println(getStepCount());
       resetEasyDriver();
       break;
     }
@@ -111,7 +102,7 @@ void loop() {
     stepReverse();
     int containerLocation = calculateCenterOfContainer();
     //TODO(Rebecca): Add error range of feasible stepCounter to containerLocation
-    bool hasReachedCenterLocation = stepCounter == containerLocation;
+    bool hasReachedCenterLocation = getStepCount() == containerLocation;
     if (hasReachedCenterLocation) {
       isNozzleCentered = true;
       resetEasyDriver();
@@ -127,13 +118,14 @@ void loop() {
     analogWrite(pumpPin, 0);
     delay(2000);
     hasFinishedDispensing = true;
-    hasReturnedHome = false;
+    resetSwitches();
+    //hasReturnedHome = false;
     break;
   }
 
-  if(!isContainerThere) {
+  /*if(!isContainerThere) {
     resetSystem();
-  }
+  }*/
 }
 
 //FUNCTIONS /***********************************************************************
@@ -223,8 +215,8 @@ bool findRim(bool isFirstRim) {
   int location = isFirstRim ? rimLocation : rimLocation2;
   
   if(!isRimLocated){
-    int hacking = 30;
-    bool hasPassedSketchyRegion = stepCounter > hacking; // This sketchy region won't be an issue with the new rig.
+    int hacking = 50;
+    bool hasPassedSketchyRegion = getStepCount() > hacking; // This sketchy region won't be an issue with the new rig.
     bool isReasonableHeight = averageHeight > MINIMUM_CUP_HEIGHT;
 
     double rimError = abs(rimHeight - averageHeight)/double(rimHeight);
@@ -242,7 +234,7 @@ bool findRim(bool isFirstRim) {
       bool hasFoundNewRim = averageHeight > height;
       if(hasFoundNewRim) {
         if (isFirstRim) {
-          updateRimParameters(isFirstRim, averageHeight, stepCounter);
+          updateRimParameters(isFirstRim, averageHeight, getStepCount());
         } else {
           #ifdef DEBUG
             Serial.print("Rim Difference [Rim 1, Rim2]: "); Serial.print(rimHeight); Serial.print(", "); Serial.println(averageHeight);
@@ -251,7 +243,7 @@ bool findRim(bool isFirstRim) {
           #endif
 
           if (rimError < MAX_ERROR_PERCENTAGE && hasPassedFirstRim) {
-            updateRimParameters(isFirstRim, averageHeight, stepCounter);
+            updateRimParameters(isFirstRim, averageHeight, getStepCount());
           }
         }
       } else {
@@ -263,7 +255,7 @@ bool findRim(bool isFirstRim) {
 }
 
 bool hasRimStabilized(int location) {
-  int rimStabilizedCounter = (location == 0) ? 0 : (stepCounter - location);
+  int rimStabilizedCounter = (location == 0) ? 0 : (getStepCount() - location);
   bool hasRimStabilized = rimStabilizedCounter >= RIM_THRESHOLD_STEPS;
   return hasRimStabilized ? true : false;
 }
@@ -307,7 +299,7 @@ void returnHome() {
 int calculateCenterOfContainer() {
   if (rimLocation == 0 || rimLocation2 == 0) {
     resetSystem();
-    return 0;
+    return 50; // So it doesn't ram into the home button
   }
   // Note: This is likely overkill, but to prevent integer overflow
   return (rimLocation / 2 + rimLocation2 / 2);
@@ -319,6 +311,6 @@ void resetSystem() {
   hasFinishedDispensing = false;
   isScanComplete = false;
   isNozzleCentered = false;
-  hasReturnedHome = false;
+  //hasReturnedHome = false;
   resetEasyDriver();
 }
