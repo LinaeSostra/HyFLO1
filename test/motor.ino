@@ -6,7 +6,7 @@
 const int STEPPER_SWITCH_WAITTIME = 100; // microseconds
 
 int stepCounter = 0; 
-bool wasMotorOn = false;
+//bool wasMotorOn = false;
 
 // Initialize Stepper Motor / Easy Driver Pins & set driver to default
 void motorSetup() {
@@ -73,66 +73,41 @@ void stepReverse() {
 
 // Sends the nozzle to the home position
 void returnHome() {
-  if(!wasMotorOn) {
     while(!hasVisitedHome()) {
       stepReverse();
       if(hasVisitedHome()) {
-        digitalWrite(enablePin, HIGH);
-        wasMotorOn = true;
         break;
       } 
+    }
+}
+
+// Sends the nozzle to the end position
+void goToEnd() {
+  while(!hasVisitedEnd()) {
+    stepForward();
+    if(hasVisitedEnd()) {
+      break;
     }
   }
 }
 
-int x;
-int y;
-int state;
-
 // Testing the stepper motor by going forward 10 times, then backwards 10 times
 void testMotor() {
-  if(!wasMotorOn) {
-  Serial.println("Alternate between stepping forward and reverse.");
-  digitalWrite(enablePin, LOW);
-  for(x= 1; x<5; x++)  //Loop the forward stepping enough times for motion to be visible
-  {
-    //Read direction pin state and change it
-    state=digitalRead(directionPin);
-    if(state == HIGH)
-    {
-      digitalWrite(directionPin, LOW);
-    }
-    else if(state ==LOW)
-    {
-      digitalWrite(directionPin, HIGH);
-    }
-    
-    for(y=1; y<10000; y++)
-    {
-      digitalWrite(stepperPin, HIGH); //Trigger one step
-      delayMicroseconds(STEPPER_SWITCH_WAITTIME);
-      digitalWrite(stepperPin, LOW); //Pull step pin low so it can be triggered again
-      delayMicroseconds(STEPPER_SWITCH_WAITTIME);
-    }
+  int count = 10;
+
+  Serial.println("Stepping Forward");
+  for(int i = 0; i < count; i++) {
+    stepForward();
   }
-  wasMotorOn = true;
-  }else {
-    Serial.println("Motor Flag on, so not moving!");
+
+  Serial.println("Stepping Backwards");
+  for(int i = 0; i < count; i++) {
+    stepReverse();
   }
-  /*if(!wasMotorOn) { 
-    int count = 100;
-    //stepReverse();
-    Serial.println("Stepping Forward");
-    for(int i = 0; i < count; i++) {
-      stepForward();
-    }
-    resetEasyDriver();
-    
-    Serial.println("Stepping Backward");
-    for(int i = 0; i < count; i++) {
-      stepReverse();
-    }
-    
-  }
-  wasMotorOn = true;*/
+}
+
+// Tests the motor goes forward and backwards whilist stopping when switches pressed.
+void testMotorAndSwitches() {
+  returnHome();
+  goToEnd();
 }

@@ -1,7 +1,6 @@
 /*
  * Tactile Switches
  */
-
 bool hasVisitedHomePosition = false;
 bool hasVisitedEndPosition = false;
 
