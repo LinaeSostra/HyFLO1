@@ -10,7 +10,7 @@
 
 #define DEBUG // comment this line to disable debug (Serial Prints)
 
-#define STEPPER_SWITCH_WAITTIME 70 // microseconds
+#define STEPPER_SWITCH_WAITTIME 80 // microseconds
 #define MAX_ERROR_PERCENTAGE 0.1 // % (unitless)
 
 int stepCounter = 0; 
@@ -61,8 +61,10 @@ void setup() {
   resetDriver();
  
   // Initalize Tactile Position Switches
-  pinMode(homePin, INPUT_PULLUP);
-  pinMode(endPin, INPUT_PULLUP);
+  switchSetup();
+  //pinMode(homePin, INPUT_PULLUP);
+  //pinMode(endPin, INPUT_PULLUP);
+
 
   // Initialize Pump
   pinMode(pumpPin, OUTPUT);
@@ -79,14 +81,14 @@ void setup() {
 void loop() {
   // Send the nozzle to home position 
   returnHome();
-
+  
   // Check if there's a container present
   bool isContainerThere = checkForContainer();
   
   // Once container is present, start scan
   bool isReadyToScan = isContainerThere && !isScanComplete;
   while (isReadyToScan) {
-    StepForward();
+    stepForward();
     findAllRims();
     // Check if scan is complete
     bool isAtEndPosition = digitalRead(endPin) == LOW;
@@ -105,7 +107,7 @@ void loop() {
 
   bool isReadyToCenterNozzle = isContainerThere && isScanComplete && !isNozzleCentered;
   while (isReadyToCenterNozzle) {
-    StepReverse();
+    stepReverse();
     int containerLocation = calculateCenterOfContainer();
     //TODO(Rebecca): Add error range of feasible stepCounter to containerLocation
     bool hasReachedCenterLocation = stepCounter == containerLocation;
@@ -188,7 +190,7 @@ int getRunningTotal() {
   return total;
 }
 
-void StepForward() {
+void stepForward() {
   setDriverForward();
   for (int i = 0; i < 100 ; i++) {
     stepOnce();
@@ -225,6 +227,8 @@ bool findRim(bool isFirstRim) {
 
     double rimError = abs(rimHeight - averageHeight)/double(rimHeight);
     #ifdef DEBUG
+      Serial.print("Rim Height: "); Serial.println(rimHeight);
+      Serial.print("Average  Height: "); Serial.println(averageHeight);
       Serial.print("Rim Error: "); Serial.println(rimError);
     #endif
     if (!isFirstRim && rimError > HEIGHT_DROP_PERCENTAGE) {
@@ -279,7 +283,7 @@ void updateRimParameters(bool isFirstRim, int height, int location) {
 }
  
 // Reverse default microstep mode function
-void StepReverse() {
+void stepReverse() {
   setDriverReverse();
   for (int i = 0; i < 100; i++) {
     stepOnce();
@@ -289,14 +293,13 @@ void StepReverse() {
 
 // Sends the nozzle to the home position
 void returnHome() {
-  while(!hasReturnedHome) {
-    StepReverse();
-    bool isAtHomePosition = digitalRead(homePin) == LOW;
-    if (isAtHomePosition) {
-      hasReturnedHome = true;
-      stepCounter = 0; 
-    }
-  }
+   while(!hasVisitedHome()) {
+     stepReverse();
+     if(hasVisitedHome()) {
+       digitalWrite(enablePin, HIGH);
+       break;
+     } 
+   }
 }
 
 int calculateCenterOfContainer() {
