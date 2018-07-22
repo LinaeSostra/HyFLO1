@@ -8,7 +8,7 @@
  * -------------------------------------------------------------
  */
 
-#include "src/VL53L0X/Adafruit_VL53L0X.h"
+#include "src/VL6180X/SparkFun_VL6180X.h"
 #include "src/NewPing/NewPing.h"
 #include "Pins.h"
 
@@ -47,14 +47,15 @@ void testSensorsAndActuators() {
   Serial.println("\nUltrasonic Testing");
   testUltrasonic();
 
-  // This is working as intended if the time of flight values fluctate between ~ 30 - 1300 mm
+  // This is working as intended if the time of flight values fluctate between ~ 30 - 250 mm
   // Anything out of this range is likely hitting out of range values
   Serial.println("\nTime of Flight Testing");
   testTimeOfFlight();
+  //plotTimeOfFlight(); // Prints the values to be read in serial plotter
 
-  Serial.println("\nMotor Testing");
+  //Serial.println("\nMotor Testing");
   testMotorAndSwitches(); // Tests the motor moves to the switches and stops
-  testMotor(); // Tests the motor moves forwards and backwards 
+  //testMotor(); // Tests the motor moves forwards and backwards 
   
 /*
   Serial.println("\nPump Testing");

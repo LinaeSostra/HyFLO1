@@ -22,6 +22,10 @@ void resetStepperCount() {
   stepCounter = 0;
 }
 
+int getStepCount() {
+  return stepCounter;
+}
+
 /* Reset Easy Driver pins to default state by:
   - resetting the stepper (LOW)
   - the direction to move "forward" (LOW)
@@ -56,7 +60,7 @@ void stepOnce() {
 // Step the motor forward
 void stepForward() {
   setDriverForward();
-  for (int i = 0; i < 100 ; i++) {
+  for (int i = 0; i < 100; i++) {
     stepOnce();
   }
   stepCounter++;
@@ -87,6 +91,7 @@ void returnHome() {
 void goToEnd() {
   while(!hasVisitedEnd()) {
     stepForward();
+    testTimeOfFlight();
     if(hasVisitedEnd()) {
       break;
     }
@@ -96,7 +101,7 @@ void goToEnd() {
 // Testing the stepper motor by going forward 10 times, then backwards 10 times
 void testMotor() {
   if(!wasMotorOn) {
-  int count = 10;
+  int count = 75;
 
   Serial.println("Stepping Forward");
   for(int i = 0; i < count; i++) {
@@ -112,8 +117,21 @@ void testMotor() {
   }
 }
 
-// Tests the motor goes forward and backwards whilist stopping when switches pressed.
+// Tests the motor goes forward and backwards whilist stopping when switches pressed, and then centering in middle.
 void testMotorAndSwitches() {
   returnHome();
-  //goToEnd();
+  goToEnd();
+  if(!wasMotorOn) {
+    int totalSteps  = getStepCount();
+    Serial.print("Total Steps: "); Serial.println(totalSteps);
+    int center = totalSteps/2;
+    while(center != getStepCount()) {
+      if(center < getStepCount()) {
+        stepReverse();
+      } else {
+        stepForward();
+      }
+    }
+    wasMotorOn = true;
+  }
 }
