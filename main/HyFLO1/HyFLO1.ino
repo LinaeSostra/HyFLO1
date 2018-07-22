@@ -93,6 +93,7 @@ void loop() {
       isScanComplete = true;
       Serial.print("Total Steps: "); Serial.println(getStepCount());
       resetEasyDriver();
+      resetSwitches();
       break;
     }
   }

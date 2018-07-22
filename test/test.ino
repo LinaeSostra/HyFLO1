@@ -54,11 +54,11 @@ void testSensorsAndActuators() {
 
   Serial.println("\nMotor Testing");
   testMotorAndSwitches(); // Tests the motor moves to the switches and stops
-  //testMotor(); // Tests the motor moves forwards and backwards 
+  testMotor(); // Tests the motor moves forwards and backwards 
   
 /*
   Serial.println("\nPump Testing");
-  testPump();
+  testPump(); // WARNING!! Turns on the pump at max dispensing for 5 seconds.
 */
   delay(100);
 } 

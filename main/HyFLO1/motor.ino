@@ -79,7 +79,8 @@ void stepReverse() {
 void returnHome() {
     while(!hasVisitedHome()) {
       stepReverse();
-      if(hasVisitedHome()) {
+      if(hasVisitedHome() || digitalRead(homePin) == HIGH) {
+        homePressed();
         resetStepperCount();
         break;
       } 

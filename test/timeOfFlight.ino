@@ -6,7 +6,7 @@
 Adafruit_VL53L0X timeOfFlight = Adafruit_VL53L0X();
 
 // Global Constants
-const int TIME_OF_FLIGHT_MAX_DISTANCE = 210; // mm
+const int TIME_OF_FLIGHT_MAX_DISTANCE = 400; // mm
 
 // Checks the time of flight boots as intended
 void timeOfFlightSetup() {
@@ -20,12 +20,19 @@ void timeOfFlightSetup() {
 }
 
 // Returns the distance of the time of flight in mm's
-uint16_t getTimeOfFlightReading() {
+int getTimeOfFlightReading() {
   VL53L0X_RangingMeasurementData_t measure;
 
   timeOfFlight.rangingTest(&measure, false); // pass in 'true' to get debug data printout!
-  bool checkingIncorrectData = (measure.RangeStatus != 4); // phase failures have incorrect data
-  return checkingIncorrectData ? measure.RangeMilliMeter : 0;
+  Serial.print("Straight Time of Flight Value: ");Serial.println(measure.RangeMilliMeter);
+    
+  bool inGoodPhase = (measure.RangeStatus != 4); // phase failures have incorrect data
+  int distance = TIME_OF_FLIGHT_MAX_DISTANCE - measure.RangeMilliMeter;
+  
+  bool isDataNotOverflowing = distance <= TIME_OF_FLIGHT_MAX_DISTANCE && distance >= 0;
+  bool isDataCorrect = inGoodPhase && isDataNotOverflowing;
+  
+  return isDataCorrect ? distance : 0;
 }
 
 // Prints out the time of flight reading

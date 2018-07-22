@@ -6,7 +6,7 @@
 const int STEPPER_SWITCH_WAITTIME = 100; // microseconds
 
 int stepCounter = 0; 
-//bool wasMotorOn = false;
+bool wasMotorOn = false;
 
 // Initialize Stepper Motor / Easy Driver Pins & set driver to default
 void motorSetup() {
@@ -75,7 +75,9 @@ void stepReverse() {
 void returnHome() {
     while(!hasVisitedHome()) {
       stepReverse();
-      if(hasVisitedHome()) {
+      if(hasVisitedHome() || digitalRead(homePin) == HIGH) {
+        homePressed();
+        resetStepperCount();
         break;
       } 
     }
@@ -93,6 +95,7 @@ void goToEnd() {
 
 // Testing the stepper motor by going forward 10 times, then backwards 10 times
 void testMotor() {
+  if(!wasMotorOn) {
   int count = 10;
 
   Serial.println("Stepping Forward");
@@ -104,10 +107,13 @@ void testMotor() {
   for(int i = 0; i < count; i++) {
     stepReverse();
   }
+  Serial.print("Steps: "); Serial.println(stepCounter);
+  wasMotorOn = true;
+  }
 }
 
 // Tests the motor goes forward and backwards whilist stopping when switches pressed.
 void testMotorAndSwitches() {
   returnHome();
-  goToEnd();
+  //goToEnd();
 }
