@@ -3,43 +3,37 @@
  */
 
 // Initialize Time of Flight
-Adafruit_VL53L0X timeOfFlight = Adafruit_VL53L0X();
+#define TIME_OF_FLIGHT_ADDRESS 0x29
+VL6180x sensor(TIME_OF_FLIGHT_ADDRESS);
 
 // Global Constants
-const int TIME_OF_FLIGHT_MAX_DISTANCE = 400; // mm
+const int TIME_OF_FLIGHT_MAX_DISTANCE = 255; // mm
 
 // Checks the time of flight boots as intended
 void timeOfFlightSetup() {
-  Serial.println("Adafruit VL53L0X test");
-  if(!timeOfFlight.begin()) {
-    Serial.println(F("Failed to boot VL53L0X"));
-    while(1);
+  Serial.println("Sparkfun VL6180X test");
+  if(sensor.VL6180xInit() != 0) {
+    Serial.println("FAILED TO INITIALIZE VL6180X");
   }
-
-  Serial.println("Adafruit VL53L0X Booted Up Successfully");
+  sensor.VL6180xDefautSettings();
 }
 
 // Returns the distance of the time of flight in mm's
 int getTimeOfFlightReading() {
-  VL53L0X_RangingMeasurementData_t measure;
-
-  timeOfFlight.rangingTest(&measure, false); // pass in 'true' to get debug data printout!
-#ifdef DEBUG
-  Serial.print("Straight Time of Flight Value: ");Serial.println(measure.RangeMilliMeter);
-#endif
-  bool inGoodPhase = (measure.RangeStatus != 4); // phase failures have incorrect data
-  int distance = TIME_OF_FLIGHT_MAX_DISTANCE - measure.RangeMilliMeter;
-  
-  bool isDataNotOverflowing = distance <= TIME_OF_FLIGHT_MAX_DISTANCE && distance >= 0;
-  bool isDataCorrect = inGoodPhase && isDataNotOverflowing;
-  
-  return isDataCorrect ? distance : 0;
+  int height = TIME_OF_FLIGHT_MAX_DISTANCE - sensor.getDistance();
+  //assert(height >=  0);
+  return height;
 }
 
-// Prints out the time of flight reading
+// Plots out the time of flight reading for serial plotter
+void plotTimeOfFlight() {
+  int distance = getTimeOfFlightReading();
+  Serial.println(distance);
+}
+
+// Prints out the time of flight reading for serial monitor
 void testTimeOfFlight() {
-  uint16_t distance = getTimeOfFlightReading();
-  
+  int distance = getTimeOfFlightReading();
   bool isObjectOutOfRange = distance == 0; 
   if(isObjectOutOfRange) {
     Serial.println("Out of Range.");

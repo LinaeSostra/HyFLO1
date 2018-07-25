@@ -3,7 +3,7 @@
  */
 
 // Global Constants
-const int STEPPER_SWITCH_WAITTIME = 85; // microseconds
+const int STEPPER_SWITCH_WAITTIME = 70; // microseconds
 
 int stepCounter = 0; 
 bool wasMotorOn = false;
@@ -94,6 +94,18 @@ void goToEnd() {
     if(hasVisitedEnd()) {
       break;
     }
+  }
+}
+
+void goToLocation(int stepAmount) {
+  while(stepAmount != getStepCount()) {
+    //Serial.print("MOVING TO STEP AMOUNT: "); Serial.println(stepAmount);
+    if(stepAmount > getStepCount()) {
+      stepForward();
+    }else {
+      stepReverse();
+    }
+    //Serial.print("Step At: ");Serial.println(getStepCount());
   }
 }
 

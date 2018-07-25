@@ -30,7 +30,7 @@ void endPressed() {
   hasVisitedEndPosition = true;
   
   //TODO(Rebecca): This may be incorrect logically.
-  hasVisitedHomePosition = false;
+  //hasVisitedHomePosition = false;
   //returnHome();
 }
 
