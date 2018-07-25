@@ -7,7 +7,7 @@
  *
  * -------------------------------------------------------------
  */
-
+//#include "src/VL53L0X/Adafruit_VL53L0X.h"
 #include "src/VL6180X/SparkFun_VL6180X.h"
 #include "src/NewPing/NewPing.h"
 #include "Pins.h"
@@ -44,23 +44,26 @@ void loop() {
 void testSensorsAndActuators() {
   // This is working as intended if the ultrasonic values fluctate between ~ 30 - 5000 mm
   // Anything out of this range is likely hitting out of range values
-  Serial.println("\nUltrasonic Testing");
-  testUltrasonic();
+  //Serial.println("\nUltrasonic Testing");
+  //testUltrasonic();
 
   // This is working as intended if the time of flight values fluctate between ~ 30 - 250 mm
   // Anything out of this range is likely hitting out of range values
-  Serial.println("\nTime of Flight Testing");
-  testTimeOfFlight();
+  //Serial.println("\nTime of Flight Testing");
+  //testTimeOfFlight();
+  //plotRawTimeOfFlight(); // Prints the raw time of flight readings in serial plotter
   //plotTimeOfFlight(); // Prints the values to be read in serial plotter
+  //plotAverageTimeOfFlight(); // Prints the average values to read in serial plotter
 
   //Serial.println("\nMotor Testing");
   testMotorAndSwitches(); // Tests the motor moves to the switches and stops
   //testMotor(); // Tests the motor moves forwards and backwards 
   
-/*
-  Serial.println("\nPump Testing");
-  testPump(); // WARNING!! Turns on the pump at max dispensing for 5 seconds.
-*/
+
+  //Serial.println("\nPump Testing");
+  //testPump(); // WARNING!! Turns on the pump at max dispensing for 5 seconds.
+  //testPump2();
+
   delay(100);
 } 
 

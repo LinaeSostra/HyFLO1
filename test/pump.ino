@@ -45,7 +45,11 @@ void pumpHalfOn() {
 // Turns the pump on for a second, then off.
 void testPump() {
   pumpOn();
-  delay(5000);
+  for(int i = 0; i < 250; i++) {
+    testTimeOfFlight();
+    delay(20);
+  }
+  //delay(5000);
   pumpOff();
   wasPumpOn = true;
  }
@@ -53,7 +57,7 @@ void testPump() {
 // Rebecca testing the PWM functionality works w/ intended pump.
  void testPump2() {
   pumpHalfOn();
-  delay(500);
+  delay(2000);
   pumpOff();
   wasPumpOn = true;
  }

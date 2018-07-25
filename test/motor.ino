@@ -91,7 +91,7 @@ void returnHome() {
 void goToEnd() {
   while(!hasVisitedEnd()) {
     stepForward();
-    testTimeOfFlight();
+    plotAverageTimeOfFlight();
     if(hasVisitedEnd()) {
       break;
     }
@@ -123,7 +123,7 @@ void testMotorAndSwitches() {
   goToEnd();
   if(!wasMotorOn) {
     int totalSteps  = getStepCount();
-    Serial.print("Total Steps: "); Serial.println(totalSteps);
+    //Serial.print("Total Steps: "); Serial.println(totalSteps);
     int center = totalSteps/2;
     while(center != getStepCount()) {
       if(center < getStepCount()) {
