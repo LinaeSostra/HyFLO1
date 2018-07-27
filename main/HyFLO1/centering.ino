@@ -4,6 +4,7 @@
 const int RIM_THRESHOLD_STEPS = 10;
 const int MINIMUM_CUP_HEIGHT = 15; // mm
 const int RIM_DIFFERENCE = 15; // mm
+const int NOZZLE_OFFSET_STEP = 4; // 100 steps = 4 mm -> 4*4mm ~ 1.6 cm
 
 // Variables
 int rimLocation, rimLocation2 = 0;

@@ -11,11 +11,6 @@
 
 #define DEBUG // comment this line to disable debug (Serial Prints)
 
-#define MAX_ERROR_PERCENTAGE 0.1 // % (unitless)
-const int NOZZLE_OFFSET_STEP = 4; // 100 steps = 4 mm -> 4*4mm ~ 1.6 cm
-
-// Other Global Variables
-
 // Buad Rate = Data Rate in Bits per Second
 // Recommended Rate: 300, 600, 1200, 2400, 4800, 9600, 14400, 
 // 19200, 28800, 38400, 57600, or 115200
@@ -24,6 +19,8 @@ const int NOZZLE_OFFSET_STEP = 4; // 100 steps = 4 mm -> 4*4mm ~ 1.6 cm
 bool isNozzleCentered = false;
 bool isScanComplete = false;
 bool hasFinishedDispensing = false;
+//TODO(Rebecca): This will be from the terminal!!
+
 
 void setup() {
   Serial.begin(BAUD_RATE);
@@ -51,7 +48,7 @@ void setup() {
 
 void loop() {
   // Send the nozzle to home position 
-  returnHome();
+  returnHome();  
   
   // Check if there's a container present
   bool isContainerThere = checkForContainer();
@@ -89,10 +86,26 @@ void loop() {
   
   bool isReadyToDispenseLiquid = isContainerThere && isScanComplete && isNozzleCentered && !hasFinishedDispensing;
   while(isReadyToDispenseLiquid) {
-    //analogWrite(pumpPin, 255);
     Serial.println("Pretend Dispensing");
+    int fillSelection = getFillSelection();
+    switch(fillSelection) {
+      case 0:
+        Serial.println("No Fill has been Selected");
+        analogWrite(pumpPin, 0);
+        break;
+      case 1:
+        Serial.println("Filling to half Cup");
+        break;
+      case 2:
+        Serial.println("Filling 3/4ths of Cup");
+        //analogWrite(pumpPin, 191);
+        break;
+      case 3:
+        Serial.println("Filling to full Cup");
+        //analogWrite(pumpPin, 255);
+        break;
+    }
     delay(1000); // BE SUPER CAREFUL WITH THIS!!!
-    // TODO(Rebecca): Add Half Fill Functionality
     analogWrite(pumpPin, 0);
     delay(2000);
     hasFinishedDispensing = true;
