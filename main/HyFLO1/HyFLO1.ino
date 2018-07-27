@@ -95,43 +95,35 @@ void loop() {
       break;
     }
   }
- 
 
   bool isReadyToCenterNozzle = isContainerThere && isScanComplete && !isNozzleCentered;
   while(isReadyToCenterNozzle) {
     int containerLocation = calculateCenterOfContainer();
     goToLocation(containerLocation);
-    isNozzleCentered = true;
-    //Serial.print("Step Count: ");Serial.println(getStepCount());
+    isNozzleCentered = (containerLocation != 0)? true: false;
+    #ifdef DEBUG
+    Serial.print("Step Count: ");Serial.println(getStepCount());
+    Serial.print("Is Nozzle Centered? "); Serial.println(isNozzleCentered);
+    #endif
+    break;
   }
- /* while (isReadyToCenterNozzle) {
-    stepReverse();
-    int containerLocation = calculateCenterOfContainer();
-    //TODO(Rebecca): Add error range of feasible stepCounter to containerLocation
-    bool hasReachedCenterLocation = getStepCount() == containerLocation;
-    if (hasReachedCenterLocation) {
-      Serial.print("Center Location: "); Serial.println(containerLocation);
-      isNozzleCentered = true;
-      break;
-    }
-  }*/
   
-  /*bool isReadyToDispenseLiquid = isContainerThere && isScanComplete && isNozzleCentered && !hasFinishedDispensing;
+  bool isReadyToDispenseLiquid = isContainerThere && isScanComplete && isNozzleCentered && !hasFinishedDispensing;
   while(isReadyToDispenseLiquid) {
     //analogWrite(pumpPin, 255);
+    Serial.println("Pretend Dispensing");
     delay(1000); // BE SUPER CAREFUL WITH THIS!!!
     // TODO(Rebecca): Add Half Fill Functionality
     analogWrite(pumpPin, 0);
     delay(2000);
     hasFinishedDispensing = true;
     resetSwitches();
-    //hasReturnedHome = false;
     break;
-  }*/
+  }
 
-  /*if(!isContainerThere) {
+  if(!isContainerThere && isScanComplete) {
     resetSystem();
-  }*/
+  }
 }
 
 //FUNCTIONS /***********************************************************************
@@ -249,11 +241,6 @@ int calculateCenterOfContainer() {
   if (rimLocation == 0 || rimLocation2 == 0) {
     return 0;
   }
-  /*else if (rimLocation2 == 0) { //TODO: REMOVE!!! This is for debugging!!
-    //TODO(Rebecca): Add edge in here.
-    return rimLocation;
-  }*/
-  // Note: This is likely overkill, but to prevent integer overflow
   return ((rimLocation + rimLocation2) / 2) - NOZZLE_OFFSET_STEP;
 }
 
@@ -261,8 +248,16 @@ int calculateCenterOfContainer() {
 void resetSystem() {
   analogWrite(pumpPin, 0);
   hasFinishedDispensing = false;
-  isScanComplete = false;
   isNozzleCentered = false;
-  //hasReturnedHome = false;
+  isScanComplete = false;
+  
+  isFirstRimLocated = false;
+  isSecondRimLocated = false;
+  hasPassedFirstRim = false;
+  rimLocation = 0;
+  rimLocation2 = 0;
+  rimHeight = 0;
+  rimHeight2 = 0;
+
   resetEasyDriver();
 }

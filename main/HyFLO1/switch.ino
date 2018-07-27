@@ -21,6 +21,7 @@ void switchSetup() {
 void homePressed() {
   Serial.println("\nHome Tactile Switch Pressed!");
   hasVisitedHomePosition = true;
+  hasVisitedEndPosition = false;
   resetStepperCount();
 }
 
