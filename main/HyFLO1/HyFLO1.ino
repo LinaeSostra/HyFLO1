@@ -122,6 +122,9 @@ void loop() {
   }
 
   if(!isContainerThere && isScanComplete) {
+    #ifdef DEBUG
+      Serial.println("RESETTING SYSTEM!!!");
+    #endif
     resetSystem();
   }
 }
