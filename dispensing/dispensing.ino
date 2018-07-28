@@ -34,8 +34,7 @@ void setup() {
   }
 
   // Sensor Setup
-  ultrasonicSetup();
-  timeOfFlightSetup();
+  //timeOfFlightSetup();
 
   // Actuator Setup
   pumpSetup();
@@ -46,9 +45,11 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
+  //testTimeOfFlight();
+  //testPump();
 
   // Check if there's a container present
-  bool isContainerThere = checkForContainer();
+  bool isContainerThere = true;
 
   if(isContainerThere && !getPumpFlag()) {
     dispenseLiquid();

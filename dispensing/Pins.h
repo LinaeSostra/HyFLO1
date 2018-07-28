@@ -3,8 +3,8 @@
 #define PINS_H
 
 // Time of Flight
-const int sdaPin = 2;
-const int sclPin = 3;
+const int sdaPin = A4;//2;
+const int sclPin = A5;//3;
 
 // Ultrasonic Sensor
 const int triggerPin = 8;

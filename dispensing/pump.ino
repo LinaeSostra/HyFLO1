@@ -3,7 +3,7 @@
  */
 
 // Mockup globals for testing
-const float userFill = 0.5;
+const float userFill = 1;
 const float MAX_FILL = 0.9;
 const float MIN_FILL = 0.0;
 
@@ -50,9 +50,12 @@ bool wasPumpOn = false;
  }
 
 // Turns the pump on for a second, then off.
- void testPump() {
+void testPump() {
   pumpOn();
-  delay(500);
+  for(int8_t i = 0; i < 250; i++) {
+    testTimeOfFlight();
+    delay(20);
+  }
   pumpOff();
   wasPumpOn = true;
  }
@@ -66,7 +69,7 @@ bool wasPumpOn = false;
  }
 
  // Calculate how much to fill the cup by height [mm]
-int calculateTargetHeightFill(float percentage, int rimAvgHeight) {
+int16_t calculateTargetHeightFill(float percentage, int16_t rimAvgHeight) {
   //Edge Case Flooring user request to fill
   if(percentage > MAX_FILL) {
     percentage = MAX_FILL;
@@ -76,30 +79,43 @@ int calculateTargetHeightFill(float percentage, int rimAvgHeight) {
   return int(percentage * float(rimAvgHeight));
 }
 
-// Returns the error difference to target height
-int getHeightDifference(int currentHeight, int targetHeight) {
-  return (targetHeight - currentHeight);
-}
-
 // Returns the height percentage filled
-int getFillPercentage(int currentHeight, int cupHeight) {
-  return int(float(currentHeight)/float(cupHeight) * 100);
+int16_t getFillPercentage(int16_t current) {
+  int16_t target = calculateTargetHeightFill(userFill, mockRimHeight);
+  
+  if (target > mockRimHeight) {
+    Serial.println(F("Invalid target to fill cup. This would overfill cup"));
+  }
+  return int16_t(float(current)/float(target) * 100);
 }
 
 // Dispenses liquid into said cup
 void dispenseLiquid() {
-  int targetHeight = calculateTargetHeightFill(userFill, mockRimHeight);
-  int currentHeight = getTimeOfFlightReading();
+  int16_t targetHeight = calculateTargetHeightFill(userFill, mockRimHeight);
+  int16_t currentHeight = getTimeOfFlightReading();
 
-  fuzzy->setInput(1, getFillPercentage(currentHeight, mockRimHeight));
+  int16_t fillPercentage = getFillPercentage(currentHeight);
+  
+  #ifdef DEBUG
+     Serial.println("*****************************************");
+    Serial.print("Target Height: "); Serial.println(targetHeight);
+    Serial.print("Current Height: "); Serial.println(currentHeight);
+    Serial.println("*****************************************");
+    Serial.print("Input 1: Fill Percentage: "); Serial.println(fillPercentage);
+    Serial.print("Input 2: Height of Cup: "); Serial.println(mockRimHeight);
+  #endif
+
+  fuzzy->setInput(1, fillPercentage);
   fuzzy->setInput(2, mockRimHeight);
-  fuzzy->setInput(3, getHeightDifference(currentHeight, targetHeight));
 
   fuzzy->fuzzify();
 
-  uint8_t tempSpeed = uint8_t(fuzzy->defuzzify(1));
+  float tempSpeed = float(fuzzy->defuzzify(1));
   if(wasPumpOn == false) {
-    analogWrite(pumpPin, tempSpeed);
+    #ifdef DEBUG
+      Serial.print("Output: Speed Output: "); Serial.println(tempSpeed);
+    #endif 
+    //analogWrite(pumpPin, tempSpeed);
   }
   if (tempSpeed == 0) {
     wasPumpOn = true;
