@@ -2,7 +2,7 @@
 
 // Globals
 const int RIM_THRESHOLD_STEPS = 10;
-const int MINIMUM_CUP_HEIGHT = 15; // mm
+const int MINIMUM_CUP_HEIGHT = 10; // mm
 const int RIM_DIFFERENCE = 15; // mm
 const int NOZZLE_OFFSET_STEP = 4; // 100 steps = 4 mm -> 4*4mm ~ 1.6 cm
 
@@ -36,10 +36,10 @@ bool findRim(bool isFirstRim) {
   bool isRimLocated = isFirstRim ? isFirstRimLocated : isSecondRimLocated;
   int height = isFirstRim ? rimHeight : rimHeight2;
   int location = isFirstRim ? rimLocation : rimLocation2;
-  int averageHeight = getAverageHeight();
+  int averageHeight = getTimeOfFlightReading();//getAverageHeight();
   
   if(!isRimLocated){
-    int hacking = 30;
+    int hacking = 50;
     bool hasPassedSketchyRegion = getStepCount() > hacking; // This sketchy region won't be an issue with the new rig.
     bool isReasonableHeight = averageHeight > MINIMUM_CUP_HEIGHT;
 
@@ -112,6 +112,13 @@ int calculateCenterOfContainer() {
     return 0;
   }
   return ((rimLocation + rimLocation2) / 2) - NOZZLE_OFFSET_STEP;
+}
+
+int calculateAverageContainerHeight() {
+  if(rimHeight == 0 || rimHeight2 == 0) {
+    return 0;
+  }
+  return ((rimHeight + rimHeight2) / 2);
 }
 
 void resetRimDetection() {

@@ -1,14 +1,8 @@
 /* Gathers input from the serial com of which fill the user wants */
-
-enum fill {
-  noFill,
-  halfFill,
-  threeQuartersFill,
-  fullFill
-};
+#include "Enums.h"
 
 // Variables
-enum fill fillSelection = halfFill;//noFill;
+FillAmount fillSelection = halfFill;//noFill;
 
 // Updates the fill selection based on user request
 void updateFillSelection() {
