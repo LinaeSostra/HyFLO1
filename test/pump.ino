@@ -45,11 +45,11 @@ void pumpHalfOn() {
 // Turns the pump on for a second, then off.
 void testPump() {
   pumpOn();
-  for(int i = 0; i < 250; i++) {
-    testTimeOfFlight();
+  /*for(int i = 0; i < 250; i++) {
+    //testTimeOfFlight();
     delay(20);
-  }
-  //delay(5000);
+  }*/
+  delay(11750);
   pumpOff();
   wasPumpOn = true;
  }

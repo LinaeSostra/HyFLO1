@@ -18,6 +18,14 @@ void motorSetup() {
   Serial.println("Motor Control Setup Complete!");
 }
 
+bool getMotorFlag() {
+  return wasMotorOn;
+}
+
+void resetMotorFlag() {
+  wasMotorOn = false;
+}
+
 void resetStepperCount() {
   stepCounter = 0;
 }
@@ -91,7 +99,8 @@ void returnHome() {
 void goToEnd() {
   while(!hasVisitedEnd()) {
     stepForward();
-    plotAverageTimeOfFlight();
+    plotTimeOfFlight();
+    //printTimeOfFlight();
     if(hasVisitedEnd()) {
       break;
     }
@@ -124,7 +133,7 @@ void testMotorAndSwitches() {
   if(!wasMotorOn) {
     int totalSteps  = getStepCount();
     //Serial.print("Total Steps: "); Serial.println(totalSteps);
-    int center = totalSteps/2;
+    int center = totalSteps / 2;
     while(center != getStepCount()) {
       if(center < getStepCount()) {
         stepReverse();

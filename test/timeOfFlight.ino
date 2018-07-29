@@ -2,7 +2,6 @@
  * Time of Flight
  */
 
-
 // Initialize Time of Flight
 #define TIME_OF_FLIGHT_ADDRESS 0x29
 VL6180x sensor(TIME_OF_FLIGHT_ADDRESS);
@@ -70,6 +69,12 @@ void plotRawTimeOfFlight() {
 void plotTimeOfFlight() {
   int distance = getTimeOfFlightReading();
   Serial.println(distance);
+}
+
+// Prints the time of flight readings at each step
+void printTimeOfFlight() {
+  int distance = getTimeOfFlightReading();
+  Serial.print("(Step):  ");Serial.print(getStepCount());Serial.print("     (Distance): ");Serial.println(distance);
 }
 
 void plotAverageTimeOfFlight() {

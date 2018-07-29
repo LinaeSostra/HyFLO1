@@ -37,8 +37,8 @@ void setup() {
 }
 
 void loop() {
-  testSensorsAndActuators(); // To test each sensor and actuator
-  //startSystem(); // To start dispensing sequence
+  //testSensorsAndActuators(); // To test each sensor and actuator
+  startSystem(); // To start dispensing sequence
 }
 
 void testSensorsAndActuators() {
@@ -56,7 +56,7 @@ void testSensorsAndActuators() {
   //plotAverageTimeOfFlight(); // Prints the average values to read in serial plotter
 
   //Serial.println("\nMotor Testing");
-  testMotorAndSwitches(); // Tests the motor moves to the switches and stops
+  //testMotorAndSwitches(); // Tests the motor moves to the switches and stops
   //testMotor(); // Tests the motor moves forwards and backwards 
   
 
@@ -65,8 +65,24 @@ void testSensorsAndActuators() {
   //testPump2();
 
   delay(100);
-} 
+}
 
 void startSystem() {
-  //TODO
+  bool isContainerThere = checkForContainer();
+  bool hasMotorStarted = getMotorFlag();
+  bool shouldScan = isContainerThere && !hasMotorStarted;
+  bool shouldReset = !isContainerThere && hasMotorStarted;
+  
+  if (shouldScan) {
+    testMotorAndSwitches();
+  }
+
+  // Reset System
+  if(shouldReset) {
+    #ifdef DEBUG
+      Serial.println("SYSTEM RESETTING!");
+    #endif
+    resetSwitches();
+    resetMotorFlag();
+  }
 }
