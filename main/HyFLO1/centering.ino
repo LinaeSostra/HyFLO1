@@ -36,10 +36,10 @@ bool findRim(bool isFirstRim) {
   bool isRimLocated = isFirstRim ? isFirstRimLocated : isSecondRimLocated;
   int height = isFirstRim ? rimHeight : rimHeight2;
   int location = isFirstRim ? rimLocation : rimLocation2;
-  int averageHeight = getTimeOfFlightReading();//getAverageHeight();
+  int averageHeight = getAverageHeight();
   
   if(!isRimLocated){
-    int hacking = 50;
+    int hacking = 30;
     bool hasPassedSketchyRegion = getStepCount() > hacking; // This sketchy region won't be an issue with the new rig.
     bool isReasonableHeight = averageHeight > MINIMUM_CUP_HEIGHT;
 
