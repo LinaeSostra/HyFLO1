@@ -9,7 +9,7 @@
 #include "src/NewPing/NewPing.h"
 #include "Pins.h"
 
-//#define DEBUG // comment this line to disable debug (Serial Prints)
+#define DEBUG // comment this line to disable debug (Serial Prints)
 
 // Buad Rate = Data Rate in Bits per Second
 // Recommended Rate: 300, 600, 1200, 2400, 4800, 9600, 14400, 

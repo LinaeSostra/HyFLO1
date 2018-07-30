@@ -21,7 +21,7 @@ const struct fillTime errorCupTime = { 0, 0, 0, 0, zero };
 const struct fillTime smallCupTime = { 0, 2500, 3000, 3750, half };
 const struct fillTime mediumCupTime = { 0, 5000, 7000, 9000, full };
 const struct fillTime largeCupTime = { 0, 6500, 8500, 11500, full };
-const struct fillTime extraLargeCupTime = { 0, 7500, 12000, 15500, full };
+const struct fillTime extraLargeCupTime = { 0, 7500, 13000, 15500, full };
 
 const struct fillTime cupTimes[5] = { errorCupTime, smallCupTime, mediumCupTime, largeCupTime, extraLargeCupTime };
 
@@ -45,9 +45,9 @@ void determineCupHeight() {
 }
 
 void determineFillAmount() {
-  //TODO(REBECCA): TEST W/ DAVID!!
-  //updateFillSelection();
+  updateFillSelection();
   fillAmount = getFillSelection();
+  resetFillSelection();
 }
 
 long getDispenseTime(struct fillTime cupTime) {

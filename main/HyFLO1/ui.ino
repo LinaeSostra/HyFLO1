@@ -2,14 +2,14 @@
 #include "Enums.h"
 
 // Variables
-FillAmount fillSelection = halfFill;//noFill;
+FillAmount fillSelection = noFill;
 
 // Updates the fill selection based on user request
 void updateFillSelection() {
-  while(Serial.available()) {
-    // Read user input
-    char userInput = Serial.read();
-    switch(userInput) {
+  while(!Serial.available()){}
+  // Read user input
+  char userInput = Serial.read();
+  switch(userInput) {
       case '1':
         fillSelection = halfFill;
         break;
@@ -23,7 +23,6 @@ void updateFillSelection() {
         // SOMETHING IS WRONG, SHOULDN'T GO HERE :(
         break;
     }
-  }
 }
 
 //TODO: This should be based on the selection
@@ -35,6 +34,6 @@ int getFillSelection() {
   return fillSelection;
 }
 
-void resetSelection() {
+void resetFillSelection() {
   fillSelection = noFill;
 }
