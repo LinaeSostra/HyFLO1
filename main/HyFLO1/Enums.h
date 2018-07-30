@@ -18,7 +18,8 @@ typedef enum CupHeight {
   noHeight,
   small,
   medium,
-  large
+  large,
+  extraLarge
 } CupHeight;
 
 #endif

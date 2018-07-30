@@ -27,20 +27,12 @@ void setup() {
 
   while(!Serial) { delay(1); }
 
-  // Initialize Time of Flight Sensor
-  timeOfFlightSetup();
+  timeOfFlightSetup(); // Initialize Time of Flight Sensor
+  ultrasonicSetup(); // Initialize Ultrasonic Sensor
+  switchSetup(); // Initalize Tactile Position Switches
 
-  // Initialize Ultrasonic Sensor
-  ultrasonicSetup();
-
-  // Initialize Stepper Motor / Easy Driver
-  motorSetup();
- 
-  // Initalize Tactile Position Switches
-  switchSetup();
-
-  // Initialize Pump
-  pinMode(pumpPin, OUTPUT);
+  motorSetup(); // Initialize Stepper Motor / Easy Driver
+  pumpSetup();  // Initialize Pump
 }
 
 // MAIN LOOP /**********************************************************************
@@ -87,27 +79,8 @@ void loop() {
   bool isReadyToDispenseLiquid = isContainerThere && isScanComplete && isNozzleCentered && !hasFinishedDispensing;
   while(isReadyToDispenseLiquid) {
     Serial.println("Pretend Dispensing");
-    int fillSelection = getFillSelection();
-    switch(fillSelection) {
-      case 0:
-        Serial.println("No Fill has been Selected");
-        analogWrite(pumpPin, 0);
-        break;
-      case 1:
-        Serial.println("Filling to half Cup");
-        break;
-      case 2:
-        Serial.println("Filling 3/4ths of Cup");
-        //analogWrite(pumpPin, 191);
-        break;
-      case 3:
-        Serial.println("Filling to full Cup");
-        //analogWrite(pumpPin, 255);
-        break;
-    }
-    delay(1000); // BE SUPER CAREFUL WITH THIS!!!
-    analogWrite(pumpPin, 0);
-    delay(2000);
+    startDispensing();
+    
     hasFinishedDispensing = true;
     resetSwitches();
     break;
@@ -126,11 +99,11 @@ void loop() {
 
 // Reset the system to idle ready
 void resetSystem() {
-  analogWrite(pumpPin, 0);
   hasFinishedDispensing = false;
   isNozzleCentered = false;
   isScanComplete = false;
   
   resetRimDetection();
   resetEasyDriver();
+  resetDispensing();
 }
