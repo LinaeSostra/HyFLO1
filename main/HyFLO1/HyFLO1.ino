@@ -27,9 +27,9 @@ void setup() {
 
   while(!Serial) { delay(1); }
 
-  timeOfFlightSetup(); // Initialize Time of Flight Sensor
-  ultrasonicSetup(); // Initialize Ultrasonic Sensor
   switchSetup(); // Initalize Tactile Position Switches
+  ultrasonicSetup(); // Initialize Ultrasonic Sensor
+  timeOfFlightSetup(); // Initialize Time of Flight Sensor
 
   motorSetup(); // Initialize Stepper Motor / Easy Driver
   pumpSetup();  // Initialize Pump
@@ -80,7 +80,6 @@ void loop() {
   while(isReadyToDispenseLiquid) {
     Serial.println("Pretend Dispensing");
     startDispensing();
-    
     hasFinishedDispensing = true;
     resetSwitches();
     break;

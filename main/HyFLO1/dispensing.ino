@@ -4,15 +4,15 @@
 #include "Enums.h"
 
 //TODO(Rebecca): Tune
-const int shortHeightThreshold = 30;
-const int mediumHeightThreshold = 50;
-const int tallHeightThreshold = 80;
+const int shortHeightThreshold = 50;
+const int mediumHeightThreshold = 75;
+const int tallHeightThreshold = 95;
 
 struct fillTime {
-  int noFullCupTime;
-  int halfCupTime;
-  int threeQuartersCupTime;
-  int fullCupTime;
+  long noFullCupTime;
+  long halfCupTime;
+  long threeQuartersCupTime;
+  long fullCupTime;
   FillSpeed fillSpeed;
 };
 
@@ -24,6 +24,7 @@ const struct fillTime extraLargeCupTime = { 0, 7500, 12000, 15500, full };
 
 const struct fillTime cupTimes[5] = { errorCupTime, smallCupTime, mediumCupTime, largeCupTime, extraLargeCupTime };
 
+// Local Variables
 CupHeight cupHeight;
 FillAmount fillAmount;
 
@@ -47,7 +48,7 @@ void determineFillAmount() {
   fillAmount = getFillSelection();
 }
 
-int getDispenseTime(struct fillTime cupTime) {
+long getDispenseTime(struct fillTime cupTime) {
   switch(fillAmount) {
     case noFill:
       return cupTime.noFullCupTime;
@@ -71,16 +72,21 @@ void startDispensing() {
 
   // Get the dispense time and speed
   fillTime cupTime = cupTimes[cupHeight];
-  int dispenseTime = getDispenseTime(cupTime);
   FillSpeed dispenseSpeed = cupTime.fillSpeed;
+  const long dispenseTime = getDispenseTime(cupTime);
 
-  //TODO(Rebecca):
-  // Send time and speed to pump.
-  // Also need to add if someone removes the cup
+  #ifdef DEBUG
+    Serial.print("Dispense Speed: "); Serial.println(dispenseSpeed);
+    Serial.print("Dispense Time: "); Serial.println(dispenseTime);
+  #endif
+
+  // DO NOT UNCOMMENT UNLESS CONFIDENT IT GONNA WORK!!
+  dispensePump(dispenseSpeed, dispenseTime);
 }
 
 void resetDispensing() {
   cupHeight = noHeight;
   fillAmount = noFill;
   pumpOff();
+  resetPumpFlag();
 }
