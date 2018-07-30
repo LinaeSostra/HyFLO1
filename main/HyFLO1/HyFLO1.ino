@@ -9,7 +9,7 @@
 #include "src/NewPing/NewPing.h"
 #include "Pins.h"
 
-#define DEBUG // comment this line to disable debug (Serial Prints)
+//#define DEBUG // comment this line to disable debug (Serial Prints)
 
 // Buad Rate = Data Rate in Bits per Second
 // Recommended Rate: 300, 600, 1200, 2400, 4800, 9600, 14400, 
@@ -54,9 +54,9 @@ void loop() {
       #ifdef DEBUG
       Serial.print("Rim 1 (Height, Location): "); Serial.print(getRimHeight()); Serial.print(", "); Serial.println(getRimLocation());
       Serial.print("Rim 2 (Height, Location): "); Serial.print(getRim2Height()); Serial.print(", "); Serial.println(getRim2Location());
+      Serial.print("Total Steps: "); Serial.println(getStepCount());
       #endif
       isScanComplete = true;
-      Serial.print("Total Steps: "); Serial.println(getStepCount());
       resetEasyDriver();
       resetSwitches();
       break;

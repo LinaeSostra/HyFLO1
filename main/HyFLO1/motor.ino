@@ -15,7 +15,9 @@ void motorSetup() {
   pinMode(enablePin, OUTPUT);
   
   resetEasyDriver();
-  Serial.println("Motor Control Setup Complete!");
+  #ifdef DEBUG
+    Serial.println("Motor Control Setup Complete!");
+  #endif
 }
 
 void resetStepperCount() {

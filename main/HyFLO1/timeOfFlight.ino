@@ -17,7 +17,9 @@ int averageHeight = 0;          // the average
 
 // Checks the time of flight boots as intended
 void timeOfFlightSetup() {
+  #ifdef DEBUG
   Serial.println("Sparkfun VL6180X test");
+  #endif
   if(sensor.VL6180xInit() != 0) {
     Serial.println("FAILED TO INITIALIZE VL6180X");
   }

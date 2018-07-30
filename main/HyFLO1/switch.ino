@@ -14,12 +14,16 @@ void switchSetup() {
   attachInterrupt(digitalPinToInterrupt(homePin), homePressed, RISING);
   attachInterrupt(digitalPinToInterrupt(endPin), endPressed, RISING);
   resetSwitches();
+  #ifdef DEBUG
   Serial.println("Finished Switch Setup");
+  #endif
 }
 
 // If Home Switch Pressed, set home flag true
 void homePressed() {
+  #ifdef DEBUG
   Serial.println("\nHome Tactile Switch Pressed!");
+  #endif
   hasVisitedHomePosition = true;
   hasVisitedEndPosition = false;
   resetStepperCount();
@@ -27,12 +31,10 @@ void homePressed() {
 
 // If End Switch Pressed, set end flag true
 void endPressed() {
+  #ifdef DEBUG
   Serial.println("\nEnd Tactile Switch Pressed!");
+  #endif
   hasVisitedEndPosition = true;
-  
-  //TODO(Rebecca): This may be incorrect logically.
-  //hasVisitedHomePosition = false;
-  //returnHome();
 }
 
 // Set switch flags to false
