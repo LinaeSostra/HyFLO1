@@ -78,7 +78,7 @@ void stepReverse() {
 }
 
 // Sends the nozzle to the home position
-void returnHome() {
+void returnHome() { 
     while(!hasVisitedHome()) {
       stepReverse();
       if(hasVisitedHome() || digitalRead(homePin) == HIGH) {

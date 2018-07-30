@@ -20,7 +20,6 @@ bool isScanComplete = false;
 bool isNozzleCentered = false;
 bool hasFinishedDispensing = false;
 
-
 void setup() {
   Serial.begin(BAUD_RATE);
 
@@ -49,17 +48,20 @@ void loop() {
   while (isReadyToScan) {
     stepForward();
     findAllRims();
+
     // Check if scan is complete
-    if(hasVisitedEnd() || areAllRimsLocated()) {
-      #ifdef DEBUG
-      Serial.print("Rim 1 (Height, Location): "); Serial.print(getRimHeight()); Serial.print(", "); Serial.println(getRimLocation());
-      Serial.print("Rim 2 (Height, Location): "); Serial.print(getRim2Height()); Serial.print(", "); Serial.println(getRim2Location());
-      Serial.print("Total Steps: "); Serial.println(getStepCount());
-      #endif
-      isScanComplete = true;
-      resetEasyDriver();
-      resetSwitches();
+    bool foundAllRims = areAllRimsLocated();
+    if(foundAllRims) {
+      completeScanUpdate();
       break;
+    } else if (hasVisitedEnd()) {
+      if(foundAllRims) {
+        completeScanUpdate();
+        break;
+      } else {
+        reattemptScan();
+        break;
+      }
     }
   }
 
@@ -95,6 +97,38 @@ void loop() {
 //FUNCTIONS /***********************************************************************
 ////////////////////////////////////////////////////////////////////////////////////
 
+void completeScanUpdate() {
+  #ifdef DEBUG
+      Serial.print("Rim 1 (Height, Location): "); Serial.print(getRimHeight()); Serial.print(", "); Serial.println(getRimLocation());
+      Serial.print("Rim 2 (Height, Location): "); Serial.print(getRim2Height()); Serial.print(", "); Serial.println(getRim2Location());
+      Serial.print("Total Steps: "); Serial.println(getStepCount());
+      #endif
+      isScanComplete = true;
+      resetEasyDriver();
+      resetSwitches();
+}
+
+void reattemptScan() {
+  if(canScanAgain()) {
+    #ifdef DEBUG
+      Serial.print("Rim 1 (Height, Location): "); Serial.print(getRimHeight()); Serial.print(", "); Serial.println(getRimLocation());
+      Serial.print("Rim 2 (Height, Location): "); Serial.print(getRim2Height()); Serial.print(", "); Serial.println(getRim2Location());
+      Serial.print("Total Steps: "); Serial.println(getStepCount());
+      Serial.println("Scan Failed to Center, Trying Again.");
+    #endif
+    updateScanAttempts();
+    resetRimDetection();
+    resetEasyDriver();
+    resetSwitches();
+  } else {
+    #ifdef DEBUG
+      Serial.println("Cannot scan anymore. Try another cup");
+      isScanComplete = true;
+    #endif
+  }
+  goToLocation(0);
+}
+
 // Reset the system to idle ready
 void resetSystem() {
   hasFinishedDispensing = false;
@@ -102,6 +136,7 @@ void resetSystem() {
   isScanComplete = false;
   
   resetRimDetection();
+  resetScanAttempts();
   resetEasyDriver();
   resetDispensing();
 }

@@ -5,12 +5,14 @@ const int RIM_THRESHOLD_STEPS = 10;
 const int MINIMUM_CUP_HEIGHT = 10; // mm
 const int RIM_DIFFERENCE = 15; // mm
 const int NOZZLE_OFFSET_STEP = 4; // 100 steps = 4 mm -> 4*4mm ~ 1.6 cm
+const int MAX_CENTERING_ATTEMPTS = 2;
 
 // Variables
 int rimLocation, rimLocation2 = 0;
 int rimHeight, rimHeight2 = 0;
 bool isFirstRimLocated, isSecondRimLocated = false;
 bool hasPassedFirstRim = false;
+int numOfCenteringAttempts = 0;
 
 // Functions
 
@@ -119,6 +121,21 @@ int calculateAverageContainerHeight() {
     return 0;
   }
   return ((rimHeight + rimHeight2) / 2);
+}
+
+void updateScanAttempts() {
+  numOfCenteringAttempts++;
+  #ifdef DEBUG
+    Serial.print("Updated numOfAttempts: ");Serial.println(numOfCenteringAttempts);
+  #endif
+}
+
+bool canScanAgain() {
+  return (numOfCenteringAttempts < MAX_CENTERING_ATTEMPTS);
+}
+
+void resetScanAttempts() {
+  numOfCenteringAttempts = 0;
 }
 
 void resetRimDetection() {
