@@ -99,7 +99,7 @@ void returnHome() {
 void goToEnd() {
   while(!hasVisitedEnd()) {
     stepForward();
-    plotTimeOfFlight();
+    plotAverageTimeOfFlight();
     //printTimeOfFlight();
     if(hasVisitedEnd()) {
       break;

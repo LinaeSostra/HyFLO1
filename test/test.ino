@@ -63,10 +63,12 @@ void testSensorsAndActuators() {
   //Serial.println("\nPump Testing");
   //testPump(); // WARNING!! Turns on the pump at max dispensing for 5 seconds.
   //testPump2();
+  //testPumpRealTime(2500);
 
   delay(100);
 }
 
+// Runs the system through a scan profile of a cup when a cup is placed.
 void startSystem() {
   bool isContainerThere = checkForContainer();
   bool hasMotorStarted = getMotorFlag();

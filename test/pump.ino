@@ -3,7 +3,8 @@
  */
 
 // To prevent the pump from being on indefinitely.
-bool wasPumpOn = false; 
+bool wasPumpOn = false;
+unsigned long previousMillis = 0; // to store how long the pump has been on
 
 //Initialize Pump
  void pumpSetup() {
@@ -45,11 +46,7 @@ void pumpHalfOn() {
 // Turns the pump on for a second, then off.
 void testPump() {
   pumpOn();
-  /*for(int i = 0; i < 250; i++) {
-    //testTimeOfFlight();
-    delay(20);
-  }*/
-  delay(11750);
+  delay(500);
   pumpOff();
   wasPumpOn = true;
  }
@@ -57,7 +54,23 @@ void testPump() {
 // Rebecca testing the PWM functionality works w/ intended pump.
  void testPump2() {
   pumpHalfOn();
-  delay(2000);
+  delay(500);
   pumpOff();
   wasPumpOn = true;
  }
+
+void testPumpRealTime(int timeOn) {
+  pumpOn();
+  previousMillis = millis();
+  unsigned long currentMillis, timeDifference;
+  while(!wasPumpOn) {
+    currentMillis = millis();
+    timeDifference = int(currentMillis - previousMillis);
+
+    if(timeDifference >= timeOn) {
+      pumpOff();
+      wasPumpOn = true;
+      break;
+    }
+  }
+}
