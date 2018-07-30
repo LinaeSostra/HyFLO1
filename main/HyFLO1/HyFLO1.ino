@@ -14,12 +14,11 @@
 // Buad Rate = Data Rate in Bits per Second
 // Recommended Rate: 300, 600, 1200, 2400, 4800, 9600, 14400, 
 // 19200, 28800, 38400, 57600, or 115200
-#define BAUD_RATE 9600 
+#define BAUD_RATE 9600
 
-bool isNozzleCentered = false;
 bool isScanComplete = false;
+bool isNozzleCentered = false;
 bool hasFinishedDispensing = false;
-//TODO(Rebecca): This will be from the terminal!!
 
 
 void setup() {

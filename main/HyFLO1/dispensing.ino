@@ -4,7 +4,7 @@
 #include "Enums.h"
 
 //TODO(Rebecca): Tune
-const int shortHeightThreshold = 50;
+const int shortHeightThreshold = 46;
 const int mediumHeightThreshold = 75;
 const int tallHeightThreshold = 95;
 const int ULTRASONIC_CONVERSION_TIME = 2; // Amount of time the ultrasonic multiplies to the original value
@@ -18,9 +18,9 @@ struct fillTime {
 };
 
 const struct fillTime errorCupTime = { 0, 0, 0, 0, zero };
-const struct fillTime smallCupTime = { 0, 2500, 3000, 3500, half };
-const struct fillTime mediumCupTime = { 0, 4000, 5500, 7500, full };
-const struct fillTime largeCupTime = { 0, 6500, 8500, 1150, full };
+const struct fillTime smallCupTime = { 0, 2500, 3000, 3750, half };
+const struct fillTime mediumCupTime = { 0, 5000, 7000, 9000, full };
+const struct fillTime largeCupTime = { 0, 6500, 8500, 11500, full };
 const struct fillTime extraLargeCupTime = { 0, 7500, 12000, 15500, full };
 
 const struct fillTime cupTimes[5] = { errorCupTime, smallCupTime, mediumCupTime, largeCupTime, extraLargeCupTime };
@@ -69,7 +69,7 @@ long getDispenseTime(struct fillTime cupTime) {
   
   // Note because the ultrasonic requires time for debounce back for error checking, 
   // the time needs to be reduced by half
-  const long updatedDispenseTime = fillTime/ULTRASONIC_CONVERSION_TIME;
+  const long updatedDispenseTime = fillTime / ULTRASONIC_CONVERSION_TIME;
   return updatedDispenseTime;
 }
 
