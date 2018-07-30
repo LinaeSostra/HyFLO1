@@ -69,18 +69,21 @@ void dispensePump(int fillSpeed, const long dispenseTime) {
   previousMillis = millis(); // Update time when pump was turned On!
   unsigned long currentMillis, timeDifference;
   bool isContainerThere;
-  int scaledTime = int(dispenseTime/4);
   
   while(!wasPumpOn) {
     // Note: To error check while user accidently takes the cup while filling
     // the delay() function cannot be used, so millis() will be used instead
-    isContainerThere = checkForContainer();
+    isContainerThere = quicklyCheckForContainer();
     currentMillis = millis();
     timeDifference = currentMillis - previousMillis;
-
-    if(timeDifference >= scaledTime || !isContainerThere) {
+    
+    bool finishedDispensing = timeDifference >= dispenseTime;
+    bool wasContainerTaken = !isContainerThere;
+    
+    if(finishedDispensing || wasContainerTaken) {
       #ifdef DEBUG
         Serial.println("End Conditions were met! Stop Dispensing");
+        Serial.print("\nDispensing?: "); Serial.print(finishedDispensing);Serial.print(", Container Removed?: "); Serial.println(wasContainerTaken);
       #endif
       pumpOff();
       wasPumpOn = true;
@@ -104,4 +107,20 @@ void testPump2() {
   delay(2000);
   pumpOff();
   wasPumpOn = true;
+}
+
+void testPumpRealTime(int timeOn) {
+  pumpOn();
+  previousMillis = millis();
+  unsigned long currentMillis, timeDifference;
+  while(!wasPumpOn) {
+    currentMillis = millis();
+    timeDifference = currentMillis - previousMillis;
+
+    if(timeDifference >= timeOn) {
+      pumpOff();
+      wasPumpOn = true;
+      break;
+    }
+  }
 }

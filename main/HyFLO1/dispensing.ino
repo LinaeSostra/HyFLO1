@@ -7,6 +7,7 @@
 const int shortHeightThreshold = 50;
 const int mediumHeightThreshold = 75;
 const int tallHeightThreshold = 95;
+const int ULTRASONIC_CONVERSION_TIME = 2; // Amount of time the ultrasonic multiplies to the original value
 
 struct fillTime {
   long noFullCupTime;
@@ -44,25 +45,32 @@ void determineCupHeight() {
 }
 
 void determineFillAmount() {
-  updateFillSelection();
+  //TODO(REBECCA): TEST W/ DAVID!!
+  //updateFillSelection();
   fillAmount = getFillSelection();
 }
 
 long getDispenseTime(struct fillTime cupTime) {
+  long fillTime;
   switch(fillAmount) {
     case noFill:
-      return cupTime.noFullCupTime;
+      fillTime = cupTime.noFullCupTime;
       break;
     case halfFill:
-      return cupTime.halfCupTime;
+      fillTime = cupTime.halfCupTime;
       break;
     case threeQuartersFill:
-      return cupTime.threeQuartersCupTime;
+      fillTime = cupTime.threeQuartersCupTime;
       break;
     case fullFill:
-      return cupTime.fullCupTime;
+      fillTime = cupTime.fullCupTime;
       break;
   }
+  
+  // Note because the ultrasonic requires time for debounce back for error checking, 
+  // the time needs to be reduced by half
+  const long updatedDispenseTime = fillTime/ULTRASONIC_CONVERSION_TIME;
+  return updatedDispenseTime;
 }
 
 void startDispensing() {

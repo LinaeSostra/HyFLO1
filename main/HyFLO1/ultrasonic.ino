@@ -35,9 +35,15 @@ bool hasDistanceStabilized(unsigned int distance, unsigned int distance2) {
   return distanceChange < MAX_CHANGE_IN_DISTANCE;
 }
 
+// Checks if within detection range with no debouncing
+bool quicklyCheckForContainer() {
+  unsigned int distance = getUltrasonicReading();
+  bool isObjectOutOfRange = distance == 0;
+  bool isObjectPresent = distance <= DETECTION_THRESHOLD && !isObjectOutOfRange;
+  return isObjectPresent;
+}
 // Checks whether an object has been placed in the vicinity or not
 bool checkForContainer() {
-  // Check if distance within detection area
   unsigned int distance = getUltrasonicReading();
   bool isObjectOutOfRange = distance == 0;
   bool isObjectPresent = distance <= DETECTION_THRESHOLD && !isObjectOutOfRange;

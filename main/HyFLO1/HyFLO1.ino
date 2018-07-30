@@ -78,7 +78,7 @@ void loop() {
   
   bool isReadyToDispenseLiquid = isContainerThere && isScanComplete && isNozzleCentered && !hasFinishedDispensing;
   while(isReadyToDispenseLiquid) {
-    Serial.println("Pretend Dispensing");
+    //testPumpRealTime(2500);
     startDispensing();
     hasFinishedDispensing = true;
     resetSwitches();
