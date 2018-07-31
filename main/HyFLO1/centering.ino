@@ -1,9 +1,12 @@
 /* Centering Algorithm for Containers */
 
 // Globals
-const int RIM_THRESHOLD_STEPS = 10;
+const int RIM_THRESHOLD_STEPS = 8; // Steps
+const int MINIMUM_WIDTH = 45; // Steps
+
 const int MINIMUM_CUP_HEIGHT = 10; // mm
 const int RIM_DIFFERENCE = 15; // mm
+
 const int NOZZLE_OFFSET_STEP = 4; // 100 steps = 4 mm -> 4*4mm ~ 1.6 cm
 const int MAX_CENTERING_ATTEMPTS = 2;
 
@@ -12,6 +15,7 @@ int rimLocation, rimLocation2 = 0;
 int rimHeight, rimHeight2 = 0;
 bool isFirstRimLocated, isSecondRimLocated = false;
 bool hasPassedFirstRim = false;
+
 int numOfCenteringAttempts = 0;
 
 // Functions
@@ -39,10 +43,11 @@ bool findRim(bool isFirstRim) {
   int height = isFirstRim ? rimHeight : rimHeight2;
   int location = isFirstRim ? rimLocation : rimLocation2;
   int averageHeight = getAverageHeight();
+  int steps = getStepCount();
   
   if(!isRimLocated){
     int hacking = 30;
-    bool hasPassedSketchyRegion = getStepCount() > hacking; // This sketchy region won't be an issue with the new rig.
+    bool hasPassedSketchyRegion = steps > hacking; // This sketchy region won't be an issue with the new rig.
     bool isReasonableHeight = averageHeight > MINIMUM_CUP_HEIGHT;
 
     double rimError = abs(rimHeight - averageHeight);
@@ -60,16 +65,18 @@ bool findRim(bool isFirstRim) {
       bool hasFoundNewRim = averageHeight > height;
       if(hasFoundNewRim) {
         if (isFirstRim) {
-          updateRimParameters(isFirstRim, averageHeight, getStepCount());
+          updateRimParameters(isFirstRim, averageHeight, steps);
         } else {
+          int cupWidth = steps - rimLocation;
           #ifdef DEBUG
             Serial.print("Rim Difference [Rim 1, Rim2]: "); Serial.print(rimHeight); Serial.print(", "); Serial.println(averageHeight);
+            Serial.print("Cup Width: "); Serial.println(cupWidth);
             Serial.print("Rim Error: "); Serial.println(rimError);
             Serial.print("Passed First Rim?: "); Serial.println(hasPassedFirstRim);
           #endif
 
-          if (rimError < RIM_DIFFERENCE && hasPassedFirstRim) {
-            updateRimParameters(isFirstRim, averageHeight, getStepCount());
+          if (rimError < RIM_DIFFERENCE && hasPassedFirstRim && cupWidth >= MINIMUM_WIDTH) {
+            updateRimParameters(isFirstRim, averageHeight, steps);
           }
         }
       } else {
@@ -88,6 +95,10 @@ bool hasRimStabilized(int location) {
 
 bool areAllRimsLocated() {
   return isFirstRimLocated && isSecondRimLocated;
+}
+
+bool foundTwoRims() {
+  return rimHeight != 0 && rimHeight2 != 0;
 }
 
 void updateRimParameters(bool isFirstRim, int height, int location) {
@@ -113,7 +124,7 @@ int calculateCenterOfContainer() {
   if (rimLocation == 0 || rimLocation2 == 0) {
     return 0;
   }
-  return ((rimLocation + rimLocation2) / 2) - NOZZLE_OFFSET_STEP;
+  return ((rimLocation + rimLocation2) / 2) - NOZZLE_OFFSET_STEP - RIM_THRESHOLD_STEPS/2;
 }
 
 int calculateAverageContainerHeight() {

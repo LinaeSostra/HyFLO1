@@ -4,9 +4,9 @@
 #include "Enums.h"
 
 //TODO(Rebecca): Tune
-const int shortHeightThreshold = 46;
+const int shortHeightThreshold = 48;
 const int mediumHeightThreshold = 75;
-const int tallHeightThreshold = 95;
+const int tallHeightThreshold = 100;
 const int ULTRASONIC_CONVERSION_TIME = 2; // Amount of time the ultrasonic multiplies to the original value
 
 struct fillTime {

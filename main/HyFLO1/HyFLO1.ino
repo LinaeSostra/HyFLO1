@@ -50,12 +50,11 @@ void loop() {
     findAllRims();
 
     // Check if scan is complete
-    bool foundAllRims = areAllRimsLocated();
-    if(foundAllRims) {
+    if(areAllRimsLocated()) {
       completeScanUpdate();
       break;
     } else if (hasVisitedEnd()) {
-      if(foundAllRims) {
+      if(foundTwoRims()) {
         completeScanUpdate();
         break;
       } else {
